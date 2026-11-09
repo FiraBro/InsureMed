@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  title: Insurance Management System API
+  description: Professional backend for managing insurance policies, claims, AI risk assessment, and agent workflows.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # --- Insurance Domain Models ---
+    Policy:
+      type: object
+      properties:
+        _id: { type: string, example: "65a1b2c3d4e5f67890" }
+        planId: { type: string }
+        status: { type: string, enum: [active, pending, cancelled, expired] }
+        premiumAmount: { type: number, example: 450.00 }
+
+    Claim:
+      type: object
+      properties:
+        policyId: { type: string }
+        reason: { type: string, example: "Accidental damage to vehicle" }
+        claimAmount: { type: number, example: 2500.00 }
+        status:
+          { type: string, enum: [submitted, under_review, approved, rejected] }
+
+    # --- Error Responses ---
+    Error:
+      type: object
+      properties:
+        status: { type: string, example: "error" }
+        message: { type: string, example: "Access denied: Admins only" }
+
+security:
+  - bearerAuth: []
+
+paths:
+  # AUTHENTICATION
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        201: { description: User created }
+
+  # INSURANCE PLANS
+  /plans:
+    get:
+      tags: [Insurance Plans]
+      summary: List all published plans (Public)
+      responses:
+        200:
+          description: OK
+  /plans/risk-score:
+    post:
+      tags: [Insurance Plans]
+      summary: Preview risk score (Admin Only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        200: { description: Risk assessment calculated }
+
+  # APPLICATIONS & CLAIMS
+  /applications/apply:
+    post:
+      tags: [Applications]
+      summary: Submit policy application with documents
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                documents:
+                  { type: array, items: { type: string, format: binary } }
+      responses:
+        201: { description: Application received }
+
+  /claims/create:
+    post:
+      tags: [Claims]
+      summary: Create new claim with evidence
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document: { type: string, format: binary }
+                claimAmount: { type: number }
+      responses:
+        201: { description: Claim filed successfully }
+
+  # AI & ANALYTICS
+  /ai/query:
+    post:
+      tags: [AI Assistant]
+      summary: Chat with Insurance AI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string }
+      responses:
+        200: { description: AI response }

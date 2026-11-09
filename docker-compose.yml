@@ -1,0 +1,64 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: health_insurance_redis
+    restart: always
+    ports:
+      - "6379:6379"
+  # ====================
+  # MongoDB
+  # ====================
+  mongodb_health:
+    image: mongo:6
+    container_name: mongodb_health_insurance
+    restart: always
+    ports:
+      - "27019:27017"
+    environment:
+      MONGO_INITDB_DATABASE: health_insurance
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - mongodb_health_data:/data/db
+
+  # ====================
+  # Backend API (Node.js)
+  # ====================
+  server:
+    build: ./Server
+    container_name: health_insurance_api
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./Server/.env # <- backend loads your .env including SMTP
+    depends_on:
+      - mongodb_health
+      - redis
+    volumes:
+      - ./Server:/app
+    working_dir: /app
+    command: npm run dev
+
+  # ====================
+  # Frontend (Vite)
+  # ====================
+  client:
+    build: ./Clients
+    container_name: health_insurance_client
+    restart: always
+    ports:
+      - "3000:5173" # map container port 5173 to host port 3000
+    environment:
+      REACT_APP_API_URL: http://server:3001
+    depends_on:
+      - server
+    volumes:
+      - ./Clients:/app
+    working_dir: /app
+    command: npm start
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongodb_health_data:

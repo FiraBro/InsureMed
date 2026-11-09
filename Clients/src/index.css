@@ -1,0 +1,200 @@
+/* --- FONTS & CORE --- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+@import "./components.css";
+
+/* --- CUSTOM PROFESSIONAL TOAST ANIMATIONS --- */
+@keyframes toastEnter {
+  from {
+    transform: translateY(12px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastExit {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* Overriding Toastify default bounce with our professional transition */
+.Toastify__bounce-enter--top-right,
+.Toastify__bounce-enter--bottom-right {
+  animation: toastEnter 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards !important;
+}
+.Toastify__bounce-exit--top-right,
+.Toastify__bounce-exit--bottom-right {
+  animation: toastExit 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards !important;
+}
+
+/* --- TOASTIFY STYLE & SYNCED COLORS --- */
+.Toastify__toast {
+  background-color: #ffffff !important;
+  color: #1f1f1f !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+  min-height: 44px !important; /* COMPACT SMALL HEIGHT */
+  padding: 8px 14px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.Toastify__toast-body {
+  font-family: "Inter", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+  padding-left: 6px !important;
+}
+
+/* 1. SUCCESS SYNC (BLUE) */
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #4285f4 !important;
+}
+.Toastify__progress-bar--success {
+  background: #4285f4 !important;
+  height: 2px !important;
+}
+
+/* 2. ERROR SYNC (PURPLE) */
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #9b72cb !important;
+}
+.Toastify__progress-bar--error {
+  background: #9b72cb !important;
+  height: 2px !important;
+}
+/* Hide the close button globally */
+.Toastify__close-button {
+  display: none !important;
+}
+
+/* --- AI GRADIENT ANIMATION (GEMINI STATE) --- */
+@keyframes geminiFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: geminiFlow 3s linear infinite;
+}
+
+/* --- GLOBAL BASE STYLES --- */
+:root {
+  --radius: 0.5rem;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --ring: 221.2 83% 53%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+  font-family: "Inter", sans-serif !important;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Manrope", sans-serif !important;
+}
+
+/* Modern thin scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Prevent Radix Layout Shift */
+body[data-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+:root {
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+@keyframes geminiFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gemini-gradient {
+  background: linear-gradient(-45deg, #fce7f3, #f3e8ff, #e0e7ff, #fdf2f8);
+  background-size: 300% 300%;
+  animation: geminiFlow 10s ease-infinite;
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes ohims-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.ohims-float {
+  animation: ohims-float 5.5s ease-in-out infinite;
+}
+
+.ohims-float-slow {
+  animation: ohims-float 7s ease-in-out 0.6s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ohims-float,
+  .ohims-float-slow {
+    animation: none;
+  }
+}
+
+.ohims-focus {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2;
+}
