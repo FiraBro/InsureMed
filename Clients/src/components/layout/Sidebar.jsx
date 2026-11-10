@@ -120,7 +120,7 @@ export default function Sidebar() {
                         "group flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200",
                         isActive
                           ? "bg-blue-500 text-white shadow-md shadow-zinc-200"
-                          : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                          : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50",
                       )
                     }
                   >
@@ -128,7 +128,7 @@ export default function Sidebar() {
                       <item.icon
                         className={cn(
                           "text-lg",
-                          isActive ? "text-white" : "group-hover:text-blue-500"
+                          isActive ? "text-white" : "group-hover:text-blue-500",
                         )}
                       />
                       <span className="text-sm font-semibold tracking-tight">

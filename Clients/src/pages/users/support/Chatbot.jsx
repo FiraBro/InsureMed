@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChatbot } from "@/hooks/useChat";
 
-export default function PremiumInsuranceChatbot({ userId }) {
+export default function PremiumInsuranceChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
-  const { messages, sendMessage, isLoading } = useChatbot(userId);
+  const { messages, sendMessage, isLoading } = useChatbot();
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });

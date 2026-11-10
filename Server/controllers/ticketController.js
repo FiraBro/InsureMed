@@ -1,16 +1,16 @@
 import * as TicketService from "../services/ticketService.js";
+import { ROLES } from "../constants/roles.js";
 
 // 1. Create a new ticket
 export const createTicket = async (req, res) => {
   try {
     const ticket = await TicketService.createTicket({
       ...req.body,
-      user: req.user.id,
       // The frontend can now send relatedPolicy or relatedClaim in the body
       relatedPolicy: req.body.relatedPolicy || null,
       relatedClaim: req.body.relatedClaim || null,
       messages: [{ sender: req.user.id, message: req.body.description }],
-    });
+    }, req.user.id);
     res.status(201).json({ success: true, data: ticket });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -22,7 +22,8 @@ export const getAllTickets = async (req, res) => {
     const { page, limit, search, status } = req.query;
 
     // 1. Role-based security filter
-    let filters = req.user.role === "user" ? { user: req.user.id } : {};
+    const canViewAll = [ROLES.ADMIN, ROLES.AGENT].includes(req.user.role);
+    const filters = canViewAll ? {} : { user: req.user.id };
 
     // 2. Add Status filter if provided (e.g., ?status=OPEN)
     if (status) {
@@ -35,7 +36,6 @@ export const getAllTickets = async (req, res) => {
       limit,
       search,
     });
-    console.log("Fetched Tickets:", result); // Debug log
     res.status(200).json({
       success: true,
       data: result.tickets,
@@ -83,11 +83,14 @@ export const getMyTickets = async (req, res) => {
 // 3. Get single ticket details
 export const getTicketDetails = async (req, res) => {
   try {
-    const ticket = await TicketService.getTicketById(req.params.id);
+    const ticket = await TicketService.getTicketById(req.params.id, req.user);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
     res.status(200).json({ success: true, data: ticket });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -103,10 +106,15 @@ export const addReply = async (req, res) => {
 
     const ticket = await TicketService.replyToTicket(
       req.params.id,
-      messageData
+      messageData,
+      req.user
     );
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
     res.status(200).json({ success: true, data: ticket });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
     res.status(400).json({ success: false, message: error.message });
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   motion,
@@ -6,7 +6,6 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "framer-motion";
-import { Link } from "react-router-dom";
 import {
   FiPlus,
   FiSearch,
@@ -14,8 +13,8 @@ import {
   FiActivity,
   FiClock,
   FiLifeBuoy,
-  FiShield,
 } from "react-icons/fi";
+
 import { useTickets } from "@/hooks/useTicket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,12 +39,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// --- ANIMATION VARIANTS ---
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
   },
 };
 
@@ -54,40 +56,62 @@ const itemVariants = {
   visible: {
     y: 0,
     opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 24 },
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
+    },
   },
 };
 
 const GeneralSupportPage = () => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ page: 1, limit: 5, search: "" });
 
-  // Navbar Visibility State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 5,
+    search: "",
+  });
+
+  // Navbar visibility
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
+
     if (latest > previous && latest > 150) {
-      setHidden(true); // Hide on scroll down
+      setHidden(true);
     } else {
-      setHidden(false); // Show on scroll up
+      setHidden(false);
     }
   });
 
-  const { myTickets, isLoading, createTicket, isCreating } = useTickets(
-    null,
-    false,
-    filters
-  );
+  const {
+    myTickets,
+    isLoading,
+    isMyTicketsError,
+    myTicketsError,
+    refetchMyTickets,
+    createTicket,
+    isCreating,
+  } = useTickets(null, false, filters);
+
   const tickets = myTickets?.data || [];
-  const pagination = myTickets?.pagination || { page: 1, pages: 1, total: 0 };
+
+  const pagination = myTickets?.pagination || {
+    page: 1,
+    pages: 1,
+    total: 0,
+  };
 
   const handleCreateTicket = async (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.currentTarget);
     const textContent = formData.get("userQuery");
+
     const payload = {
       subject: formData.get("subject"),
       category: formData.get("category"),
@@ -95,6 +119,7 @@ const GeneralSupportPage = () => {
       userQuery: textContent,
       description: textContent,
     };
+
     try {
       await createTicket(payload);
       setIsModalOpen(false);
@@ -105,62 +130,66 @@ const GeneralSupportPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFAFF] pb-20">
-      {/* --- SMOOTH SCROLL NAVBAR --- */}
+    <div className="w-full min-w-0 min-h-full bg-white overflow-x-hidden">
+      {/* Header */}
       <motion.nav
-        variants={{ visible: { y: 0 }, hidden: { y: "-100%" } }}
+        variants={{
+          visible: { y: 0 },
+          hidden: { y: "-100%" },
+        }}
         animate={hidden ? "hidden" : "visible"}
-        transition={{ duration: 0.35, ease: "easeInOut" }}
-        className="sticky top-0 z-50 w-full bg-white/70 backdrop-blur-xl border-b border-slate-100"
+        transition={{
+          duration: 0.35,
+          ease: "easeInOut",
+        }}
+        className="sticky top-0 z-30 w-full bg-white border-b border-slate-200"
       >
-        <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 select-none">
-            <div className="relative">
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white"></span>
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-                  Neural<span className="text-blue-500">Sure</span>
-                </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white bg-gradient-to-r from-[#4285F4] via-[#9B72CB] to-[#D96570]">
-                  AI
-                </span>
-              </div>
-            </div>
-          </Link>
-
+        <div className="w-full px-6 lg:px-10 h-16 flex items-center justify-end">
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 rounded-xl h-11 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-100">
-                <FiPlus className="mr-2 size-4" /> Initialize Case
+              <Button
+                className="
+                  h-11 px-5
+                  bg-white text-slate-700
+                  border border-slate-200
+                  hover:bg-slate-50
+                  hover:border-slate-300
+                  rounded-lg
+                  text-xs font-semibold
+                  shadow-sm
+                  transition-all
+                "
+              >
+                <FiPlus className="mr-2 size-4" />
+                Initialize Case
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] bg-white/90 backdrop-blur-xl rounded-[32px] border-none shadow-2xl p-8 overflow-hidden">
+
+            <DialogContent className="sm:max-w-[550px] bg-white rounded-2xl border border-slate-200 shadow-xl p-8 overflow-hidden">
               <DialogHeader>
-                <DialogTitle className="text-xl font-extrabold text-slate-900 uppercase tracking-tight">
+                <DialogTitle className="text-xl font-bold text-slate-900">
                   Create Intelligence Ticket
                 </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500">
-                  Neural routing engine will process your request based on
-                  priority parameters.
+
+                <DialogDescription className="text-sm text-slate-500">
+                  Submit your request and provide the necessary details.
                 </DialogDescription>
               </DialogHeader>
+
               <form onSubmit={handleCreateTicket} className="space-y-5 py-6">
-                {/* ... (Form Content Remains Same) */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Category and Priority */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase font-black text-slate-400">
+                    <Label className="text-xs font-semibold text-slate-600">
                       Category
                     </Label>
+
                     <Select name="category" required defaultValue="ACCOUNT">
-                      <SelectTrigger className="rounded-xl border-slate-100 bg-slate-50/50">
-                        <SelectValue placeholder="Select" />
+                      <SelectTrigger className="rounded-lg border-slate-200 bg-white h-11">
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
+
+                      <SelectContent className="bg-white">
                         <SelectItem value="CLAIM">Claim Request</SelectItem>
                         <SelectItem value="PAYMENT">Billing/Payment</SelectItem>
                         <SelectItem value="POLICY">Policy Update</SelectItem>
@@ -168,15 +197,18 @@ const GeneralSupportPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase font-black text-slate-400">
+                    <Label className="text-xs font-semibold text-slate-600">
                       Priority
                     </Label>
+
                     <Select name="priority" required defaultValue="LOW">
-                      <SelectTrigger className="rounded-xl border-slate-100 bg-slate-50/50">
+                      <SelectTrigger className="rounded-lg border-slate-200 bg-white h-11">
                         <SelectValue placeholder="Priority" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
+
+                      <SelectContent className="bg-white">
                         <SelectItem value="LOW">Low</SelectItem>
                         <SelectItem value="MEDIUM">Medium</SelectItem>
                         <SelectItem value="HIGH">High</SelectItem>
@@ -185,35 +217,42 @@ const GeneralSupportPage = () => {
                     </Select>
                   </div>
                 </div>
+
+                {/* Subject */}
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-black text-slate-400">
+                  <Label className="text-xs font-semibold text-slate-600">
                     Subject
                   </Label>
+
                   <Input
                     name="subject"
                     placeholder="E.g., Secure login failure"
-                    className="rounded-xl border-slate-100 bg-slate-50/50 h-11"
+                    className="rounded-lg border-slate-200 bg-white h-11"
                     required
                   />
                 </div>
+
+                {/* Description */}
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-black text-slate-400">
+                  <Label className="text-xs font-semibold text-slate-600">
                     Analysis Details
                   </Label>
+
                   <Textarea
                     name="userQuery"
-                    placeholder="Detailed description for AI categorization..."
-                    className="rounded-xl border-slate-100 bg-slate-50/50 min-h-[120px] resize-none"
+                    placeholder="Describe your issue..."
+                    className="rounded-lg border-slate-200 bg-white min-h-[120px] resize-none"
                     required
                   />
                 </div>
+
                 <DialogFooter className="pt-2">
                   <Button
                     type="submit"
                     disabled={isCreating}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 font-black uppercase text-[10px] tracking-widest transition-all shadow-md"
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg h-11 font-semibold"
                   >
-                    {isCreating ? "Synchronizing..." : "Initialize Neural Case"}
+                    {isCreating ? "Creating..." : "Initialize Case"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -222,27 +261,29 @@ const GeneralSupportPage = () => {
         </div>
       </motion.nav>
 
+      {/* Main Content */}
       <motion.main
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
+        animate="visible"
         variants={containerVariants}
-        className="max-w-7xl mx-auto px-8 py-12"
+        className="w-full max-w-none min-w-0 px-5 sm:px-6 lg:px-10 py-8"
       >
-        {/* --- METRIC ROW --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {/* Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-8 w-full">
           <MetricCard
             label="Active Requests"
             val={pagination.total}
             icon={<FiActivity />}
             color="text-indigo-600"
           />
+
           <MetricCard
             label="System Accuracy"
             val="99.8%"
             icon={<FiLifeBuoy />}
             color="text-emerald-600"
           />
+
           <MetricCard
             label="Avg Response"
             val="1.4h"
@@ -251,97 +292,146 @@ const GeneralSupportPage = () => {
           />
         </div>
 
-        {/* --- TABLE: FIXED WIDTH TO MATCH CARDS --- */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+        {/* Case Records */}
+        <motion.div
+          variants={itemVariants}
+          className="space-y-5 w-full min-w-0"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Case Records
             </h2>
-            <div className="relative w-72">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+
+            <div className="relative w-full sm:w-72">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+
               <Input
                 placeholder="Filter records..."
-                className="pl-12 h-11 bg-white border-slate-100 rounded-xl shadow-sm text-xs font-medium"
+                className="pl-11 h-11 bg-white border-slate-200 rounded-lg text-sm"
                 onChange={(e) =>
-                  setFilters((p) => ({ ...p, search: e.target.value, page: 1 }))
+                  setFilters((p) => ({
+                    ...p,
+                    search: e.target.value,
+                    page: 1,
+                  }))
                 }
               />
             </div>
           </div>
 
-          <Card className="border-slate-100 shadow-sm rounded-[24px] overflow-hidden bg-white">
+          <Card className="w-full border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                {" "}
-                {/* Ensures table doesn't break mobile */}
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50/50 border-b border-slate-100 text-[10px] uppercase font-black text-slate-400">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase font-semibold text-slate-500">
                     <tr>
-                      <th className="px-8 py-5">Case Intel</th>
-                      <th className="px-8 py-5">Ticket ID</th>
-                      <th className="px-8 py-5">Priority</th>
-                      <th className="px-8 py-5">Status</th>
-                      <th className="px-8 py-5 text-right">Access</th>
+                      <th className="px-6 py-4">Case Intel</th>
+                      <th className="px-6 py-4">Ticket ID</th>
+                      <th className="px-6 py-4">Priority</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Access</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+
+                  <tbody className="divide-y divide-slate-100">
                     {isLoading ? (
                       <tr>
                         <td
                           colSpan={5}
-                          className="px-8 py-12 text-center text-slate-400 text-[10px] font-black uppercase animate-pulse"
+                          className="px-6 py-12 text-center text-slate-400 text-sm"
                         >
-                          Decrypting...
+                          Loading cases...
+                        </td>
+                      </tr>
+                    ) : isMyTicketsError ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <p className="text-sm font-semibold text-red-600">
+                            Could not load your support cases.
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {myTicketsError?.response?.data?.message ||
+                              myTicketsError?.message ||
+                              "Please try again."}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => refetchMyTickets()}
+                            className="mt-3 border-slate-200 bg-white"
+                          >
+                            Retry
+                          </Button>
+                        </td>
+                      </tr>
+                    ) : tickets.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-16 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <FiLifeBuoy className="size-8 text-slate-300" />
+                            <p className="text-sm font-semibold text-slate-700">
+                              No cases found
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              Your support requests will appear here.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     ) : (
-                      /* Removed mode="popLayout" to prevent the row from jumping to the side during the exit phase */
                       <AnimatePresence>
                         {tickets.map((t, idx) => (
                           <motion.tr
                             key={t._id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -10 }} // Changed to horizontal fade out to look cleaner
+                            exit={{ opacity: 0, x: -10 }}
                             transition={{
                               duration: 0.2,
-                              delay: idx * 0.03, // Slightly faster stagger for better feel
+                              delay: idx * 0.03,
                             }}
-                            className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                            className="hover:bg-slate-50 transition-colors group"
                           >
-                            <td className="px-8 py-6">
-                              <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            <td className="px-6 py-5">
+                              <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                 {t.subject}
                               </p>
+
                               <Badge
                                 variant="outline"
-                                className="text-[9px] font-bold border-slate-200 text-slate-400 rounded-md mt-1.5"
+                                className="text-xs font-medium border-slate-200 text-slate-500 rounded-md mt-2"
                               >
                                 {t.category}
                               </Badge>
                             </td>
-                            <td className="px-8 py-6 font-mono text-[11px] font-bold text-slate-400">
+
+                            <td className="px-6 py-5 font-mono text-xs text-slate-500">
                               {t.ticketId}
                             </td>
-                            <td className="px-8 py-6">
+
+                            <td className="px-6 py-5">
                               <PriorityBadge priority={t.priority} />
                             </td>
-                            <td className="px-8 py-6">
+
+                            <td className="px-6 py-5">
                               <Badge
                                 className={`${getStatusStyles(
-                                  t.status
-                                )} border rounded-lg text-[9px] font-black uppercase px-2.5 py-1`}
+                                  t.status,
+                                )} border rounded-md text-xs font-semibold uppercase px-2.5 py-1`}
                               >
                                 {t.status.replace("_", " ")}
                               </Badge>
                             </td>
-                            <td className="px-8 py-6 text-right">
+
+                            <td className="px-6 py-5 text-right">
                               <Button
                                 variant="ghost"
                                 onClick={() =>
-                                  navigate(`/dashboard/support/tickets/${t._id}`)
+                                  navigate(
+                                    `/dashboard/support/tickets/${t._id}`,
+                                  )
                                 }
-                                className="h-9 w-9 p-0 rounded-xl hover:bg-slate-900 hover:text-white transition-all"
+                                className="h-9 w-9 p-0 rounded-lg hover:bg-slate-900 hover:text-white transition-all"
                               >
                                 <FiChevronRight size={18} />
                               </Button>
@@ -355,27 +445,66 @@ const GeneralSupportPage = () => {
               </div>
             </CardContent>
           </Card>
+          {!isLoading && !isMyTicketsError && pagination.pages > 1 && (
+            <div className="flex items-center justify-between gap-4 text-sm text-slate-500">
+              <span>
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pagination.page <= 1}
+                  onClick={() =>
+                    setFilters((current) => ({
+                      ...current,
+                      page: Math.max(current.page - 1, 1),
+                    }))
+                  }
+                  className="border-slate-200 bg-white"
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pagination.page >= pagination.pages}
+                  onClick={() =>
+                    setFilters((current) => ({
+                      ...current,
+                      page: Math.min(current.page + 1, pagination.pages),
+                    }))
+                  }
+                  className="border-slate-200 bg-white"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </motion.div>
       </motion.main>
     </div>
   );
 };
 
-// ... MetricCard, PriorityBadge, getStatusStyles helper components ...
+// Metric Card
 const MetricCard = ({ label, val, icon, color }) => (
-  <motion.div variants={itemVariants}>
-    <Card className="border-none shadow-sm rounded-[24px] bg-white group hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
-      <CardContent className="p-8 flex items-center justify-between">
+  <motion.div variants={itemVariants} className="w-full">
+    <Card className="border border-slate-200 shadow-sm rounded-xl bg-white group hover:shadow-md transition-all duration-300">
+      <CardContent className="p-6 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
             {label}
           </p>
-          <p className="text-3xl font-[900] text-slate-900 tracking-tighter">
+
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">
             {val}
           </p>
         </div>
+
         <div
-          className={`h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center ${color} text-2xl shadow-inner group-hover:scale-110 transition-transform`}
+          className={`h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center ${color} text-xl transition-transform group-hover:scale-105`}
         >
           {icon}
         </div>
@@ -384,17 +513,18 @@ const MetricCard = ({ label, val, icon, color }) => (
   </motion.div>
 );
 
-// (Keep PriorityBadge and getStatusStyles as they were)
+// Priority Badge
 const PriorityBadge = ({ priority }) => {
   const styles = {
-    LOW: "text-slate-500 bg-slate-100",
+    LOW: "text-slate-600 bg-slate-100",
     MEDIUM: "text-blue-600 bg-blue-50",
     HIGH: "text-orange-600 bg-orange-50",
-    EMERGENCY: "text-red-600 bg-red-50 animate-pulse font-black",
+    EMERGENCY: "text-red-600 bg-red-50 font-bold",
   };
+
   return (
     <span
-      className={`text-[9px] font-bold px-2 py-1 rounded-md ${
+      className={`text-xs font-semibold px-2.5 py-1 rounded-md ${
         styles[priority] || styles.LOW
       }`}
     >
@@ -403,20 +533,26 @@ const PriorityBadge = ({ priority }) => {
   );
 };
 
+// Status Styles
 const getStatusStyles = (status) => {
   switch (status) {
     case "OPEN":
       return "bg-emerald-50 text-emerald-700 border-emerald-100";
+
     case "IN_REVIEW":
       return "bg-indigo-50 text-indigo-700 border-indigo-100";
+
     case "WAITING":
       return "bg-amber-50 text-amber-700 border-amber-100";
+
     case "RESOLVED":
       return "bg-slate-100 text-slate-600 border-slate-200";
+
     case "CLOSED":
       return "bg-slate-200 text-slate-500 border-transparent";
+
     default:
-      return "bg-slate-50 text-slate-500";
+      return "bg-slate-50 text-slate-500 border-slate-200";
   }
 };
 

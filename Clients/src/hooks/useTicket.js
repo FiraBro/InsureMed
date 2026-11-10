@@ -1,13 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ticketService } from "@/services/tickerService";
 import { toast } from "react-toastify";
+import { useAuthStore } from "@/stores/authStore";
 
 export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
+  const currentUserId = user?.id || user?._id || null;
 
   // 1. User's personal tickets
-  const { data: myTickets, isLoading: isLoadingMy } = useQuery({
-    queryKey: ["tickets", "mine", filters],
+  const {
+    data: myTickets,
+    isLoading: isLoadingMy,
+    isError: isMyTicketsError,
+    error: myTicketsError,
+    refetch: refetchMyTickets,
+  } = useQuery({
+    queryKey: ["tickets", "mine", currentUserId, filters],
     queryFn: () => ticketService.getMyTickets(filters),
     select: (res) => ({
       data: res?.data || [],
@@ -21,7 +30,7 @@ export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
     isLoading: isLoadingAll,
     refetch: refetchAll,
   } = useQuery({
-    queryKey: ["tickets", "all", filters],
+    queryKey: ["tickets", "all", currentUserId, filters],
     queryFn: () => ticketService.getAllTickets(filters),
     select: (res) => ({
       data: res?.data || [],
@@ -33,7 +42,7 @@ export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
 
   // 3. Live Chat History
   const { data: ticketDetails, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ["tickets", "detail", ticketId],
+    queryKey: ["tickets", "detail", currentUserId, ticketId],
     queryFn: () => ticketService.getTicketDetails(ticketId),
     enabled: !!ticketId,
     select: (res) => res?.data || res,
@@ -64,7 +73,7 @@ export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
     onSuccess: (_, variables) => {
       // Refetch specific ticket details
       queryClient.invalidateQueries({
-        queryKey: ["tickets", "detail", variables.id],
+        queryKey: ["tickets", "detail", currentUserId, variables.id],
       });
     },
     onError: (err) => toast.error(err.message || "Failed to send message"),
@@ -79,7 +88,7 @@ export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
 
       // Specifically update the detail view cache immediately
       queryClient.setQueryData(
-        ["tickets", "detail", variables.id],
+        ["tickets", "detail", currentUserId, variables.id],
         updatedTicket?.data
       );
 
@@ -93,6 +102,9 @@ export const useTickets = (ticketId = null, fetchAll = false, filters = {}) => {
     allTickets,
     ticketDetails,
     isLoading: isLoadingMy || isLoadingAll,
+    isMyTicketsError,
+    myTicketsError,
+    refetchMyTickets,
     isLoadingDetails,
     refetchAll,
     // Mutations

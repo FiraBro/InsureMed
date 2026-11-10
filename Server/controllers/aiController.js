@@ -1,14 +1,14 @@
 import FAQ from "../models/faq.js";
-import Ticket from "../models/ticket.js";
+import * as TicketService from "../services/ticketService.js";
 import * as aiService from "../services/aiService.js";
 import { cosineSimilarity } from "../services/vectorService.js";
 
 export const handleChat = async (req, res) => {
   try {
-    const { query, userId } = req.body;
+    const { query } = req.body;
 
-    if (!userId || !query) {
-      return res.status(400).json({ error: "userId and query are required." });
+    if (!query) {
+      return res.status(400).json({ error: "query is required." });
     }
 
     // 1. Convert query to vector
@@ -61,15 +61,14 @@ export const handleChat = async (req, res) => {
         detectedCategory = "POLICY";
 
       // 5. Create Ticket with ALL required fields from your schema
-      const ticket = await Ticket.create({
-        user: userId, // Matches 'user' in your schema (ref: User)
+      const ticket = await TicketService.createTicket({
         userQuery: query,
         botDraft: answer,
         subject: query.split(" ").slice(0, 5).join(" ") + "...", // Auto-generate subject
         category: detectedCategory, // Matches your ENUM
         status: "OPEN",
         priority: "LOW",
-      });
+      }, req.user.id);
 
       return res.status(200).json({
         message:

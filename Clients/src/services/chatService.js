@@ -4,14 +4,11 @@ import api from "@/lib/axios";
  * Sends the user query to the Gemini-powered backend.
  * Uses the pre-configured Axios instance for consistency across the app.
  */
-export const sendChatQuery = async ({ userId, query }) => {
-  console.log("Sending query to backend:", query, userId);
+export const sendChatQuery = async ({ query }) => {
+  console.log("Sending query to backend:", query);
   try {
     // We use the relative path because the base URL is already in your axios config
-    const response = await api.post("/chat/query", {
-      userId,
-      query,
-    });
+    const response = await api.post("/chat/query", { query });
 
     // Axios returns the data directly in the .data property
     return response.data;

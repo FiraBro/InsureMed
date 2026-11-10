@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { sendChatQuery } from "@/services/chatService";
-export const useChatbot = (userId) => {
+export const useChatbot = () => {
   const [messages, setMessages] = useState([
     {
       role: "bot",
@@ -49,7 +49,7 @@ export const useChatbot = (userId) => {
 
   const sendMessage = (query) => {
     if (!query.trim()) return;
-    mutation.mutate({ userId, query });
+    mutation.mutate({ query });
   };
 
   return {

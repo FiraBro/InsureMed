@@ -3,19 +3,27 @@ import VALID_TRANSITIONS from "../constants/transition.js";
 import sendEmail from "../utils/sendEmail.js";
 import { ticketStatusUpdateEmail } from "../utils/emailTemplate.js";
 import getDeadline from "../utils/getDeadline.js";
+import { ROLES } from "../constants/roles.js";
 
-export const createTicket = (data) =>
-  Ticket.create({ ...data, slaDeadline: getDeadline(data.priority) });
+export const createTicket = (data, userId) =>
+  Ticket.create({
+    ...data,
+    user: userId,
+    slaDeadline: getDeadline(data.priority),
+  });
 
 // Updated Service with true pagination and search
 export const getUserTickets = async (
   userId,
-  { page = 1, limit = 10, search = "" }
+  { page = 1, limit = 10, search = "", status }
 ) => {
-  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+  const pageSize = Math.max(parseInt(limit, 10) || 10, 1);
+  const skip = (pageNumber - 1) * pageSize;
 
-  // Build dynamic filter
+  // Keep ownership in the database query before filtering, counting, or paging.
   const query = { user: userId };
+  if (status) query.status = status;
 
   // Add search functionality (searches subject or category)
   if (search) {
@@ -32,7 +40,7 @@ export const getUserTickets = async (
   const tickets = await Ticket.find(query)
     .sort({ updatedAt: -1 }) // Show recently updated first
     .skip(skip)
-    .limit(parseInt(limit));
+    .limit(pageSize);
 
   return { tickets, total };
 };
@@ -77,13 +85,26 @@ export const getAllTickets = async (filters = {}, options = {}) => {
   };
 };
 
-export const getTicketById = (id) =>
-  Ticket.findById(id).populate("user assignedTo");
+const ticketAccessFilter = (id, actor) => {
+  if (!actor?.id) return null;
 
-export const replyToTicket = async (ticketId, messageData) => {
-  console.log("Replying to ticket:", ticketId, messageData);
-  const ticket = await Ticket.findById(ticketId);
-  if (!ticket) throw new Error("Ticket not found");
+  const filter = { _id: id };
+  const isStaff = [ROLES.ADMIN, ROLES.AGENT].includes(actor.role);
+  if (!isStaff) filter.user = actor.id;
+  return filter;
+};
+
+export const getTicketById = (id, actor) => {
+  const filter = ticketAccessFilter(id, actor);
+  if (!filter) return null;
+  return Ticket.findOne(filter).populate("user assignedTo");
+};
+
+export const replyToTicket = async (ticketId, messageData, actor) => {
+  const filter = ticketAccessFilter(ticketId, actor);
+  if (!filter) return null;
+  const ticket = await Ticket.findOne(filter);
+  if (!ticket) return null;
   if (ticket.status === "CLOSED") throw new Error("Ticket is closed");
 
   ticket.messages.push(messageData);
