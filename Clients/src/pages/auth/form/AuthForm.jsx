@@ -28,7 +28,7 @@ export default function AuthForm() {
 
   useEffect(() => {
     if (user) {
-      navigate(user.role === "admin" ? "/admin/dashboard" : "/");
+      navigate(user.role === "admin" ? "/admin/dashboard" : "/dashboard");
     }
   }, [user, navigate]);
 
@@ -74,7 +74,7 @@ export default function AuthForm() {
     if (result.status === "success") {
       toast.success("Login successful!");
       const userRole = result.data?.user?.role || user?.role;
-      navigate(userRole === "admin" ? "/admin/dashboard" : "/");
+      navigate(userRole === "admin" ? "/admin/dashboard" : "/dashboard");
     } else {
       toast.error(result?.message || "Invalid credentials");
     }

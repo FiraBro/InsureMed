@@ -24,7 +24,8 @@ export default function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          Apply, manage, and track your insurance policies seamlessly.
+          Compare health, life, and family protection plans, then manage your
+          coverage, applications, and claims in one secure place.
         </motion.p>
 
         {/* Buttons */}
@@ -34,15 +35,15 @@ export default function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
         >
-          {/* Explore Button - Redirects to /plan */}
-          <Link to="/plans">
+          {/* Plans are previewed on this public page; account features live in the dashboard. */}
+          <a href="#insurance-plans">
             <Button
               size="lg"
               className="px-8 flex items-center gap-2 w-full md:w-auto cursor-pointer"
             >
-              Explore Plans <FiArrowRight />
+              Explore Insurance Plans <FiArrowRight />
             </Button>
-          </Link>
+          </a>
 
           {/* Login Button - Redirects to /auth */}
           <Link to="/auth">
@@ -51,7 +52,7 @@ export default function HeroSection() {
               variant="outline"
               className="px-8 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 w-full md:w-auto cursor-pointer"
             >
-              Login / Register
+              Get Protected
             </Button>
           </Link>
         </motion.div>

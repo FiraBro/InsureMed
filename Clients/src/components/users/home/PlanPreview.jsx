@@ -93,14 +93,14 @@ export default function PlansPreview() {
     return colors[colorScheme] || colors.default;
   };
 
-  const handleApply = (planId) => planId && navigate(`/apply/${planId}`);
-  const handleDetails = (planId) => planId && navigate(`/plans/${planId}`);
+  const handleApply = (planId) => planId && navigate(`/dashboard/apply/${planId}`);
+  const handleDetails = (planId) => planId && navigate(`/dashboard/plans/${planId}`);
 
   if (isLoading)
     return <p className="text-center py-12 text-gray-500">Loading plans...</p>;
 
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+    <section id="insurance-plans" className="py-16 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
       <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         initial="hidden"

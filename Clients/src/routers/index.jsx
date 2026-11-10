@@ -1,59 +1,37 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 
-/* Layouts */
 import UserLayout from "@/layout/UserLayout";
 import AdminLayout from "@/layout/AdminLayout";
-import SupportWrapper from "@/components/layout/SupportWrapper"; // The new wrapper we discussed
-
-/* Guards */
+import SupportWrapper from "@/components/layout/SupportWrapper";
 import ProtectedRoute from "@/pages/auth/form/ProtectRoutes";
 
-/* Standard Pages */
-import CreatePlanPage from "@/pages/admin/plan/CreatePlan";
-import Settings from "@/pages/admin/support/Setting";
-import AdminPlanListPage from "@/pages/admin/plan/ListAllPlan";
-import PolicyList from "@/pages/admin/policy/PolicyList";
-import AdminSupportDashboard from "@/pages/admin/ticket/AllTicket";
-
-/* Specialized Chat Pages (Standalone) */
-import TicketDetailPage from "@/pages/users/support/TicketConversation";
-import AdminLiveChat from "@/pages/admin/support/AdminLiveChat";
-import NotificationCenter from "@/pages/users/notification/Notification";
-
-/* Lazy Loaded Components */
 const HomePage = lazy(() => import("@/pages/users/home/HomePage"));
 const Dashboard = lazy(() => import("@/pages/users/dashboard/Dashboard"));
-const DashboardOverview = lazy(
-  () => import("@/pages/users/dashboard/DashboardOverview"),
-);
+const DashboardOverview = lazy(() => import("@/pages/users/dashboard/DashboardOverview"));
 const PlansPage = lazy(() => import("@/pages/users/plans/PlanPages"));
 const PlanDetail = lazy(() => import("@/pages/users/plans/PlanDetail"));
 const SupportPage = lazy(() => import("@/pages/users/support/SupportPage"));
+const TicketDetailPage = lazy(() => import("@/pages/users/support/TicketConversation"));
 const AuthPage = lazy(() => import("@/pages/auth/AuthPage"));
 const ProfilePage = lazy(() => import("@/pages/users/profile/ProfilePage"));
 const ApplyPlan = lazy(() => import("@/pages/users/plans/ApplyPlan"));
-const UserApplications = lazy(
-  () => import("@/pages/users/applications/UserApplications"),
-);
-const ClaimSubmissionForm = lazy(
-  () => import("@/pages/users/claim/ClaimsSubmition"),
-);
+const UserApplications = lazy(() => import("@/pages/users/applications/UserApplications"));
+const ClaimSubmissionForm = lazy(() => import("@/pages/users/claim/ClaimsSubmition"));
 const MyClaims = lazy(() => import("@/pages/users/claim/MyClaims"));
 const MyPolicies = lazy(() => import("@/pages/users/policy/MyPolicy"));
-const AdminDashboard = lazy(
-  () => import("@/pages/admin/dashboard/AdminDashboard"),
-);
-const AdminPolicyApplications = lazy(
-  () => import("@/pages/admin/applications/AdminPolicyApplications"),
-);
-const ViewPolicyApplication = lazy(
-  () => import("@/pages/admin/policy/ViewPolicyApplication"),
-);
+const NotificationCenter = lazy(() => import("@/pages/users/notification/Notification"));
+const AdminDashboard = lazy(() => import("@/pages/admin/dashboard/AdminDashboard"));
+const AdminPolicyApplications = lazy(() => import("@/pages/admin/applications/AdminPolicyApplications"));
+const ViewPolicyApplication = lazy(() => import("@/pages/admin/policy/ViewPolicyApplication"));
+const PolicyList = lazy(() => import("@/pages/admin/policy/PolicyList"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/users/AdminUserPages"));
-const AdminClaimsManagement = lazy(
-  () => import("@/pages/admin/claim/ClaimsManagement"),
-);
+const AdminClaimsManagement = lazy(() => import("@/pages/admin/claim/ClaimsManagement"));
+const CreatePlanPage = lazy(() => import("@/pages/admin/plan/CreatePlan"));
+const AdminPlanListPage = lazy(() => import("@/pages/admin/plan/ListAllPlan"));
+const AdminSupportDashboard = lazy(() => import("@/pages/admin/ticket/AllTicket"));
+const AdminLiveChat = lazy(() => import("@/pages/admin/support/AdminLiveChat"));
+const Settings = lazy(() => import("@/pages/admin/support/Setting"));
 const NotFoundPage = lazy(() => import("@/components/common/NotFoundPage"));
 
 function LegacyApplyRedirect() {
@@ -61,81 +39,71 @@ function LegacyApplyRedirect() {
   return <Navigate to={`/dashboard/apply/${id}`} replace />;
 }
 
+function RouteFallback() {
+  return <div className="flex min-h-[40vh] items-center justify-center text-slate-500" role="status">Loading…</div>;
+}
+
+function withSuspense(element) {
+  return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
+}
+
 export const router = createBrowserRouter([
-  /* 1. MAIN USER EXPERIENCE (With Navbar/Footer) */
   {
     path: "/",
     element: <UserLayout />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: "plans", element: <PlansPage /> },
-      { path: "plans/:id", element: <PlanDetail /> },
-      { path: "apply/:id", element: <LegacyApplyRedirect /> },
-      { path: "support", element: <Navigate to="/dashboard/support" replace /> },
-      { path: "*", element: <NotFoundPage /> },
+      { index: true, element: withSuspense(<HomePage />) },
+      { path: "*", element: withSuspense(<NotFoundPage />) },
     ],
   },
-
-  /* 2. USER DASHBOARD (Standalone app shell without public Navbar/Footer) */
   {
     path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute>{withSuspense(<Dashboard />)}</ProtectedRoute>,
     children: [
-      { index: true, element: <DashboardOverview /> },
-      { path: "my-policies", element: <MyPolicies /> },
-      { path: "show/claims", element: <MyClaims /> },
-      { path: "claims/new", element: <ClaimSubmissionForm /> },
-      { path: "my-applications", element: <UserApplications /> },
-      { path: "apply/:id", element: <ApplyPlan /> },
-      { path: "notifications", element: <NotificationCenter /> },
-      { path: "profile", element: <ProfilePage /> },
+      { index: true, element: withSuspense(<DashboardOverview />) },
+      { path: "plans", element: withSuspense(<PlansPage />) },
+      { path: "plans/:id", element: withSuspense(<PlanDetail />) },
+      { path: "apply/:id", element: withSuspense(<ApplyPlan />) },
+      { path: "my-policies", element: withSuspense(<MyPolicies />) },
+      { path: "show/claims", element: withSuspense(<MyClaims />) },
+      { path: "claims/new", element: withSuspense(<ClaimSubmissionForm />) },
+      { path: "my-applications", element: withSuspense(<UserApplications />) },
+      { path: "notifications", element: withSuspense(<NotificationCenter />) },
+      { path: "profile", element: withSuspense(<ProfilePage />) },
       {
         path: "support",
         element: <SupportWrapper />,
         children: [
-          { index: true, element: <SupportPage /> },
-          { path: "tickets/:id", element: <TicketDetailPage /> },
+          { index: true, element: withSuspense(<SupportPage />) },
+          { path: "tickets/:id", element: withSuspense(<TicketDetailPage />) },
         ],
       },
+      { path: "*", element: withSuspense(<NotFoundPage />) },
     ],
   },
-
-  /* 3. MAIN ADMIN DASHBOARD (With Sidebar) */
   {
     path: "/admin",
-    element: (
-      <ProtectedRoute isAdminRequired={true}>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute isAdminRequired>{withSuspense(<AdminLayout />)}</ProtectedRoute>,
     children: [
-      { path: "dashboard", element: <AdminDashboard /> },
-      { path: "applications", element: <AdminPolicyApplications /> },
-      { path: "all-policies", element: <PolicyList /> },
-      { path: "policies/details", element: <ViewPolicyApplication /> },
-      { path: "users", element: <AdminUsersPage /> },
-      { path: "all-claims", element: <AdminClaimsManagement /> },
-      { path: "create/plan", element: <CreatePlanPage /> },
-      { path: "all-plans", element: <AdminPlanListPage /> },
-      { path: "support/tickets", element: <AdminSupportDashboard /> },
-      { path: "settings", element: <Settings /> },
+      { index: true, element: <Navigate to="dashboard" replace /> },
+      { path: "dashboard", element: withSuspense(<AdminDashboard />) },
+      { path: "applications", element: withSuspense(<AdminPolicyApplications />) },
+      { path: "all-policies", element: withSuspense(<PolicyList />) },
+      { path: "policies/details", element: withSuspense(<ViewPolicyApplication />) },
+      { path: "users", element: withSuspense(<AdminUsersPage />) },
+      { path: "all-claims", element: withSuspense(<AdminClaimsManagement />) },
+      { path: "create/plan", element: withSuspense(<CreatePlanPage />) },
+      { path: "all-plans", element: withSuspense(<AdminPlanListPage />) },
+      { path: "support/tickets", element: withSuspense(<AdminSupportDashboard />) },
+      { path: "tickets/:id", element: withSuspense(<AdminLiveChat />) },
+      { path: "settings", element: withSuspense(<Settings />) },
+      { path: "*", element: withSuspense(<NotFoundPage />) },
     ],
   },
-
-  /* 4. STANDALONE ADMIN LIVE CHAT */
-  {
-    path: "/admin/tickets/:id",
-    element: (
-      <ProtectedRoute isAdminRequired={true}>
-        <AdminLiveChat />
-      </ProtectedRoute>
-    ),
-  },
-
-  /* 5. AUTHENTICATION */
-  { path: "/auth", element: <AuthPage /> },
+  { path: "/auth", element: withSuspense(<AuthPage />) },
+  { path: "/plans", element: <Navigate to="/dashboard/plans" replace /> },
+  { path: "/plans/:id", element: <Navigate to="/dashboard/plans" replace /> },
+  { path: "/apply/:id", element: <LegacyApplyRedirect /> },
+  { path: "/support", element: <Navigate to="/dashboard/support" replace /> },
+  { path: "*", element: withSuspense(<NotFoundPage />) },
 ]);

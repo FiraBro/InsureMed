@@ -12,10 +12,12 @@ const ProtectedRoute = ({ children, isAdminRequired = false }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. If admin is required but user is a normal user, kick to home/dashboard
+  // Keep each role inside its own dashboard while allowing the public landing page.
   if (isAdminRequired && user?.role !== "admin") {
-    console.warn("Access denied: Admin privileges required.");
-    return <Navigate to="/" replace />; // Or a custom 403 Forbidden page
+    return <Navigate to="/dashboard" replace />;
+  }
+  if (!isAdminRequired && user?.role === "admin") {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return children;

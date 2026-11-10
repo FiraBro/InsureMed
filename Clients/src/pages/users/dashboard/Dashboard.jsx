@@ -73,13 +73,12 @@ export default function Dashboard() {
           </button>
           <NavLink to="/dashboard" className="text-lg font-bold tracking-tight">
             Neural<span className="text-blue-600">Sure</span>
-            <span className="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-              Account
-            </span>
           </NavLink>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-slate-500 sm:inline">Welcome, {firstName}</span>
+          <span className="hidden text-sm text-slate-500 sm:inline">
+            Welcome, {firstName}
+          </span>
           <button
             type="button"
             onClick={handleLogout}
@@ -105,13 +104,10 @@ export default function Dashboard() {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="border-b border-slate-100 px-6 py-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
-            Workspace
-          </p>
-          <p className="mt-1 font-semibold text-slate-800">Account navigation</p>
-        </div>
-        <nav aria-label="Dashboard navigation" className="flex-1 space-y-1 overflow-y-auto p-4">
+        <nav
+          aria-label="Dashboard navigation"
+          className="flex-1 space-y-1 overflow-y-auto p-4"
+        >
           <SidebarLinks onNavigate={() => setIsSidebarOpen(false)} />
         </nav>
       </aside>
