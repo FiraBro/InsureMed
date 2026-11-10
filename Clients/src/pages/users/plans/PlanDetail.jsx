@@ -188,7 +188,7 @@ export default function PlanDetail() {
               <Button
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                 onClick={() => {
-                  navigate(`/apply/${plan._id}`);
+                  navigate(`/dashboard/apply/${plan._id}`);
                   toast("Redirecting to application form!"); // ✅ Toast success
                 }}
               >

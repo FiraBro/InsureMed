@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { lazy } from "react";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 
 /* Layouts */
 import UserLayout from "@/layout/UserLayout";
@@ -19,11 +19,14 @@ import AdminSupportDashboard from "@/pages/admin/ticket/AllTicket";
 /* Specialized Chat Pages (Standalone) */
 import TicketDetailPage from "@/pages/users/support/TicketConversation";
 import AdminLiveChat from "@/pages/admin/support/AdminLiveChat";
-import { PageTransition } from "@/components/common/PageTransition";
 import NotificationCenter from "@/pages/users/notification/Notification";
 
 /* Lazy Loaded Components */
 const HomePage = lazy(() => import("@/pages/users/home/HomePage"));
+const Dashboard = lazy(() => import("@/pages/users/dashboard/Dashboard"));
+const DashboardOverview = lazy(
+  () => import("@/pages/users/dashboard/DashboardOverview"),
+);
 const PlansPage = lazy(() => import("@/pages/users/plans/PlanPages"));
 const PlanDetail = lazy(() => import("@/pages/users/plans/PlanDetail"));
 const SupportPage = lazy(() => import("@/pages/users/support/SupportPage"));
@@ -53,6 +56,11 @@ const AdminClaimsManagement = lazy(
 );
 const NotFoundPage = lazy(() => import("@/components/common/NotFoundPage"));
 
+function LegacyApplyRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/dashboard/apply/${id}`} replace />;
+}
+
 export const router = createBrowserRouter([
   /* 1. MAIN USER EXPERIENCE (With Navbar/Footer) */
   {
@@ -62,85 +70,36 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: "plans", element: <PlansPage /> },
       { path: "plans/:id", element: <PlanDetail /> },
-      { path: "notifications", element: <NotificationCenter /> },
-      {
-        path: "profile",
-        element: (
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "apply/:id",
-        element: (
-          <ProtectedRoute>
-            <ApplyPlan />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "my-applications",
-        element: (
-          <ProtectedRoute>
-            <UserApplications />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "claims/new",
-        element: (
-          <ProtectedRoute>
-            <ClaimSubmissionForm />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "show/claims",
-        element: (
-          <ProtectedRoute>
-            <MyClaims />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "my-policies",
-        element: (
-          <ProtectedRoute>
-            <MyPolicies />
-          </ProtectedRoute>
-        ),
-      },
+      { path: "apply/:id", element: <LegacyApplyRedirect /> },
+      { path: "support", element: <Navigate to="/dashboard/support" replace /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
 
-  /* 2. STANDALONE USER SUPPORT (Wrapped with Chatbot) 
-     This stays outside UserLayout to keep it full-screen.
-  */
+  /* 2. USER DASHBOARD (Standalone app shell without public Navbar/Footer) */
   {
-    path: "/support",
+    path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <SupportWrapper />
+        <Dashboard />
       </ProtectedRoute>
     ),
     children: [
+      { index: true, element: <DashboardOverview /> },
+      { path: "my-policies", element: <MyPolicies /> },
+      { path: "show/claims", element: <MyClaims /> },
+      { path: "claims/new", element: <ClaimSubmissionForm /> },
+      { path: "my-applications", element: <UserApplications /> },
+      { path: "apply/:id", element: <ApplyPlan /> },
+      { path: "notifications", element: <NotificationCenter /> },
+      { path: "profile", element: <ProfilePage /> },
       {
-        index: true,
-        element: (
-          <PageTransition>
-            <SupportPage />
-          </PageTransition>
-        ),
-      },
-      {
-        path: "tickets/:id",
-        element: (
-          <PageTransition>
-            <TicketDetailPage />
-          </PageTransition>
-        ),
+        path: "support",
+        element: <SupportWrapper />,
+        children: [
+          { index: true, element: <SupportPage /> },
+          { path: "tickets/:id", element: <TicketDetailPage /> },
+        ],
       },
     ],
   },

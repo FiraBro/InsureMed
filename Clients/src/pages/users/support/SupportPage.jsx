@@ -339,7 +339,7 @@ const GeneralSupportPage = () => {
                               <Button
                                 variant="ghost"
                                 onClick={() =>
-                                  navigate(`/support/tickets/${t._id}`)
+                                  navigate(`/dashboard/support/tickets/${t._id}`)
                                 }
                                 className="h-9 w-9 p-0 rounded-xl hover:bg-slate-900 hover:text-white transition-all"
                               >

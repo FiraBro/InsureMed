@@ -143,7 +143,7 @@ export default function MyClaims() {
 
           <motion.div variants={itemVariants}>
             <Button
-              onClick={() => navigate("/claims/new")}
+              onClick={() => navigate("/dashboard/claims/new")}
               className="text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95"
             >
               <PlusCircle className="mr-2 h-4 w-4" /> New Claim

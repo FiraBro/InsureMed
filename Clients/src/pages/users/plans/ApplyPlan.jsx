@@ -132,7 +132,7 @@ export default function ApplyPlan() {
 
     try {
       await actions.apply(form);
-      navigate("/my-applications");
+      navigate("/dashboard/my-applications");
     } catch (err) {
       console.log(err);
     }

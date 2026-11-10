@@ -62,7 +62,7 @@ export default function PlansPage() {
   // --------------------------
   // Navigation
   // --------------------------
-  const handleApply = (plan) => navigate(`/apply/${plan._id}`);
+  const handleApply = (plan) => navigate(`/dashboard/apply/${plan._id}`);
   const handleDetails = (planId) => navigate(`/plans/${planId}`);
 
   // --------------------------
