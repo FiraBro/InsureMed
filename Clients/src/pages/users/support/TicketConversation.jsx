@@ -1,15 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  FiArrowLeft,
-  FiSend,
-  FiCheck,
-  FiMoreVertical,
-  FiShield,
-} from "react-icons/fi";
+import { FiArrowLeft, FiSend, FiCheck } from "react-icons/fi";
 import { useTickets } from "@/hooks/useTicket";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react"; // Import emoji picker
 
@@ -59,7 +52,7 @@ const TicketDetailPage = () => {
           setReply("");
           setShowEmoji(false);
         },
-      }
+      },
     );
   };
 
@@ -78,46 +71,35 @@ const TicketDetailPage = () => {
 
   if (isLoadingDetails)
     return (
-      <div className="h-screen flex items-center justify-center bg-[#8DB0D1]">
+      <div className="flex h-[calc(100dvh-6rem)] min-h-[28rem] items-center justify-center overflow-hidden rounded-2xl bg-[#8DB0D1] sm:h-[calc(100dvh-7rem)] lg:h-[calc(100dvh-8rem)]">
         <Loader2 className="animate-spin text-white" size={32} />
       </div>
     );
 
   return (
-    <div className="h-screen flex flex-col bg-[#8DB0D1] font-sans overflow-hidden">
-      {/* --- Telegram Header --- */}
-      <header className="bg-[#517DA2] text-white px-4 py-2 flex items-center justify-between shadow-md z-30">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="text-white hover:bg-black/10 rounded-full"
-          >
-            <FiArrowLeft size={20} />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold shadow-inner text-white">
-              <FiShield size={20} />
-            </div>
-            <div>
-              <h2 className="font-bold text-[16px] leading-tight flex items-center gap-2">
-                Support Team{" "}
-                <Badge className="bg-blue-400/20 text-[9px] h-4 px-1 border-none uppercase font-black">
-                  Official
-                </Badge>
-              </h2>
-              <p className="text-[12px] text-blue-100 opacity-80">
-                {ticket?.status === "OPEN"
-                  ? "Support is active"
-                  : "Ticket archived"}
-              </p>
-            </div>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon" className="text-white rounded-full">
-          <FiMoreVertical size={20} />
+    <div className="flex h-[calc(100dvh-6rem)] min-h-[28rem] flex-col overflow-hidden rounded-2xl bg-[#8DB0D1] font-sans sm:h-[calc(100dvh-7rem)] lg:h-[calc(100dvh-8rem)]">
+      <header className="z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-3 py-2.5 text-slate-800 shadow-sm sm:px-5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/dashboard/support")}
+          aria-label="Back to support tickets"
+          className="shrink-0 rounded-full text-slate-600 hover:bg-slate-100"
+        >
+          <FiArrowLeft size={20} />
         </Button>
+        <div className="min-w-0">
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                ticket?.status === "OPEN" ? "bg-emerald-500" : "bg-slate-400"
+              }`}
+            />
+            {ticket?.status === "OPEN"
+              ? "Support is active"
+              : "Support is unavailable"}
+          </p>
+        </div>
       </header>
 
       {/* --- Chat Workspace --- */}
@@ -126,7 +108,7 @@ const TicketDetailPage = () => {
 
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 md:px-[20%] lg:px-[30%] space-y-2 relative z-10 scroll-smooth"
+          className="relative z-10 flex-1 space-y-2 overflow-y-auto px-4 py-4 sm:px-6 lg:px-8 scroll-smooth"
         >
           <div className="flex justify-center mb-6">
             <span className="bg-black/10 backdrop-blur-md px-4 py-1 rounded-full text-[11px] font-bold text-white uppercase tracking-wider">
@@ -151,7 +133,7 @@ const TicketDetailPage = () => {
                 <div
                   className={`relative max-w-[85%] px-3 py-1.5 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-1 duration-300 ${
                     isUser
-                      ? "bg-[#EFFDDE] text-slate-800 rounded-2xl rounded-tr-none"
+                      ? "bg-blue-100 text-slate-800 rounded-2xl rounded-tr-none"
                       : "bg-white text-slate-800 rounded-2xl rounded-tl-none"
                   }`}
                 >
@@ -180,7 +162,7 @@ const TicketDetailPage = () => {
         </div>
 
         {/* --- Telegram Style Input Footer --- */}
-        <footer className="p-2 md:px-[20%] lg:px-[30%] bg-[#E7EBF0] relative z-40">
+        <footer className="relative z-40 bg-[#E7EBF0] p-2 sm:px-4 lg:px-6">
           {showEmoji && (
             <div
               ref={emojiPickerRef}

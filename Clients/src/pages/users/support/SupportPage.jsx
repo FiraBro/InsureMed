@@ -1,19 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
-} from "framer-motion";
-import {
-  FiPlus,
-  FiSearch,
-  FiChevronRight,
-  FiActivity,
-  FiClock,
-  FiLifeBuoy,
-} from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiPlus, FiSearch, FiChevronRight, FiLifeBuoy } from "react-icons/fi";
 
 import { useTickets } from "@/hooks/useTicket";
 import { Button } from "@/components/ui/button";
@@ -39,27 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
-    y: 0,
     opacity: 1,
+    y: 0,
     transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
+      duration: 0.25,
+      ease: "easeOut",
     },
   },
 };
@@ -72,20 +47,6 @@ const GeneralSupportPage = () => {
     page: 1,
     limit: 5,
     search: "",
-  });
-
-  // Navbar visibility
-  const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious();
-
-    if (latest > previous && latest > 150) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
   });
 
   const {
@@ -109,227 +70,195 @@ const GeneralSupportPage = () => {
   const handleCreateTicket = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-    const textContent = formData.get("userQuery");
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const description = formData.get("userQuery");
 
     const payload = {
       subject: formData.get("subject"),
       category: formData.get("category"),
       priority: formData.get("priority"),
-      userQuery: textContent,
-      description: textContent,
+      userQuery: description,
+      description,
     };
 
     try {
       await createTicket(payload);
+      form.reset();
       setIsModalOpen(false);
-      e.target.reset();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Failed to create support ticket:", error);
     }
   };
 
+  const handleSearch = (e) => {
+    setFilters((current) => ({
+      ...current,
+      search: e.target.value,
+      page: 1,
+    }));
+  };
+
+  const handlePageChange = (page) => {
+    setFilters((current) => ({
+      ...current,
+      page,
+    }));
+  };
+
   return (
-    <div className="w-full min-w-0 min-h-full bg-white overflow-x-hidden">
-      {/* Header */}
-      <motion.nav
-        variants={{
-          visible: { y: 0 },
-          hidden: { y: "-100%" },
-        }}
-        animate={hidden ? "hidden" : "visible"}
-        transition={{
-          duration: 0.35,
-          ease: "easeInOut",
-        }}
-        className="sticky top-0 z-30 w-full bg-white border-b border-slate-200"
-      >
-        <div className="w-full px-6 lg:px-10 h-16 flex items-center justify-end">
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className="
-                  h-11 px-5
-                  bg-white text-slate-700
-                  border border-slate-200
-                  hover:bg-slate-50
-                  hover:border-slate-300
-                  rounded-lg
-                  text-xs font-semibold
-                  shadow-sm
-                  transition-all
-                "
-              >
-                <FiPlus className="mr-2 size-4" />
-                Initialize Case
-              </Button>
-            </DialogTrigger>
+    <div className="w-full min-w-0 bg-white overflow-x-hidden">
+      {/* Page Header */}
+      <div className="w-full px-5 sm:px-6 lg:px-10 py-5 flex justify-end border-b border-slate-200 bg-white">
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              type="button"
+              className="h-11 px-5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-lg text-xs font-semibold shadow-sm transition-colors"
+            >
+              <FiPlus className="mr-2 size-4" />
+              Initialize Case
+            </Button>
+          </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[550px] bg-white rounded-2xl border border-slate-200 shadow-xl p-8 overflow-hidden">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-slate-900">
-                  Create Intelligence Ticket
-                </DialogTitle>
+          <DialogContent className="sm:max-w-[550px] bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-8">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-slate-900">
+                Create Support Ticket
+              </DialogTitle>
 
-                <DialogDescription className="text-sm text-slate-500">
-                  Submit your request and provide the necessary details.
-                </DialogDescription>
-              </DialogHeader>
+              <DialogDescription className="text-sm text-slate-500">
+                Describe your issue so our support team can assist you.
+              </DialogDescription>
+            </DialogHeader>
 
-              <form onSubmit={handleCreateTicket} className="space-y-5 py-6">
-                {/* Category and Priority */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-slate-600">
-                      Category
-                    </Label>
-
-                    <Select name="category" required defaultValue="ACCOUNT">
-                      <SelectTrigger className="rounded-lg border-slate-200 bg-white h-11">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-
-                      <SelectContent className="bg-white">
-                        <SelectItem value="CLAIM">Claim Request</SelectItem>
-                        <SelectItem value="PAYMENT">Billing/Payment</SelectItem>
-                        <SelectItem value="POLICY">Policy Update</SelectItem>
-                        <SelectItem value="ACCOUNT">Account Access</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-slate-600">
-                      Priority
-                    </Label>
-
-                    <Select name="priority" required defaultValue="LOW">
-                      <SelectTrigger className="rounded-lg border-slate-200 bg-white h-11">
-                        <SelectValue placeholder="Priority" />
-                      </SelectTrigger>
-
-                      <SelectContent className="bg-white">
-                        <SelectItem value="LOW">Low</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="HIGH">High</SelectItem>
-                        <SelectItem value="EMERGENCY">Emergency</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Subject */}
+            <form onSubmit={handleCreateTicket} className="space-y-5 py-5">
+              {/* Category and Priority */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600">
-                    Subject
+                    Category
                   </Label>
 
-                  <Input
-                    name="subject"
-                    placeholder="E.g., Secure login failure"
-                    className="rounded-lg border-slate-200 bg-white h-11"
-                    required
-                  />
+                  <Select name="category" required defaultValue="ACCOUNT">
+                    <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+
+                    <SelectContent className="bg-white">
+                      <SelectItem value="CLAIM">Claim Request</SelectItem>
+                      <SelectItem value="PAYMENT">Billing / Payment</SelectItem>
+                      <SelectItem value="POLICY">Policy Update</SelectItem>
+                      <SelectItem value="ACCOUNT">Account Access</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Description */}
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600">
-                    Analysis Details
+                    Priority
                   </Label>
 
-                  <Textarea
-                    name="userQuery"
-                    placeholder="Describe your issue..."
-                    className="rounded-lg border-slate-200 bg-white min-h-[120px] resize-none"
-                    required
-                  />
-                </div>
+                  <Select name="priority" required defaultValue="LOW">
+                    <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
 
-                <DialogFooter className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isCreating}
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg h-11 font-semibold"
-                  >
-                    {isCreating ? "Creating..." : "Initialize Case"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </motion.nav>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="EMERGENCY">Emergency</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Subject */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-slate-600">
+                  Subject
+                </Label>
+
+                <Input
+                  name="subject"
+                  placeholder="Enter your issue subject"
+                  className="h-11 rounded-lg border-slate-200"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-slate-600">
+                  Description
+                </Label>
+
+                <Textarea
+                  name="userQuery"
+                  placeholder="Describe your issue in detail..."
+                  className="min-h-[120px] rounded-lg border-slate-200 resize-none"
+                  required
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  disabled={isCreating}
+                  className="w-full h-11 rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-semibold"
+                >
+                  {isCreating ? "Creating..." : "Create Ticket"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Main Content */}
       <motion.main
         initial="hidden"
         animate="visible"
-        variants={containerVariants}
-        className="w-full max-w-none min-w-0 px-5 sm:px-6 lg:px-10 py-8"
+        className="w-full min-w-0 px-5 sm:px-6 lg:px-10 py-8"
       >
-        {/* Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-8 w-full">
-          <MetricCard
-            label="Active Requests"
-            val={pagination.total}
-            icon={<FiActivity />}
-            color="text-indigo-600"
-          />
-
-          <MetricCard
-            label="System Accuracy"
-            val="99.8%"
-            icon={<FiLifeBuoy />}
-            color="text-emerald-600"
-          />
-
-          <MetricCard
-            label="Avg Response"
-            val="1.4h"
-            icon={<FiClock />}
-            color="text-purple-600"
-          />
-        </div>
-
-        {/* Case Records */}
-        <motion.div
-          variants={itemVariants}
-          className="space-y-5 w-full min-w-0"
-        >
+        <motion.section variants={itemVariants} className="w-full space-y-5">
+          {/* Section Header and Search */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Case Records
-            </h2>
+            <div>
+              <h1 className="text-lg font-bold text-slate-900">
+                My Support Cases
+              </h1>
+
+              <p className="text-sm text-slate-500 mt-1">
+                View and manage your support requests.
+              </p>
+            </div>
 
             <div className="relative w-full sm:w-72">
               <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
 
               <Input
-                placeholder="Filter records..."
-                className="pl-11 h-11 bg-white border-slate-200 rounded-lg text-sm"
-                onChange={(e) =>
-                  setFilters((p) => ({
-                    ...p,
-                    search: e.target.value,
-                    page: 1,
-                  }))
-                }
+                value={filters.search}
+                onChange={handleSearch}
+                placeholder="Search tickets..."
+                className="h-11 pl-11 rounded-lg border-slate-200 bg-white"
               />
             </div>
           </div>
 
-          <Card className="w-full border border-slate-200 shadow-sm rounded-xl overflow-hidden bg-white">
+          {/* Ticket Table */}
+          <Card className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase font-semibold text-slate-500">
-                    <tr>
-                      <th className="px-6 py-4">Case Intel</th>
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr className="text-xs font-semibold uppercase text-slate-500">
+                      <th className="px-6 py-4">Subject</th>
                       <th className="px-6 py-4">Ticket ID</th>
                       <th className="px-6 py-4">Priority</th>
                       <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Access</th>
+                      <th className="px-6 py-4 text-right">Action</th>
                     </tr>
                   </thead>
 
@@ -338,9 +267,9 @@ const GeneralSupportPage = () => {
                       <tr>
                         <td
                           colSpan={5}
-                          className="px-6 py-12 text-center text-slate-400 text-sm"
+                          className="px-6 py-14 text-center text-sm text-slate-500"
                         >
-                          Loading cases...
+                          Loading your support cases...
                         </td>
                       </tr>
                     ) : isMyTicketsError ? (
@@ -349,16 +278,18 @@ const GeneralSupportPage = () => {
                           <p className="text-sm font-semibold text-red-600">
                             Could not load your support cases.
                           </p>
+
                           <p className="mt-1 text-xs text-slate-500">
                             {myTicketsError?.response?.data?.message ||
                               myTicketsError?.message ||
                               "Please try again."}
                           </p>
+
                           <Button
                             type="button"
                             variant="outline"
                             onClick={() => refetchMyTickets()}
-                            className="mt-3 border-slate-200 bg-white"
+                            className="mt-4 border-slate-200"
                           >
                             Retry
                           </Button>
@@ -367,71 +298,72 @@ const GeneralSupportPage = () => {
                     ) : tickets.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-16 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <FiLifeBuoy className="size-8 text-slate-300" />
+                          <div className="flex flex-col items-center gap-3">
+                            <FiLifeBuoy className="size-9 text-slate-300" />
+
                             <p className="text-sm font-semibold text-slate-700">
-                              No cases found
+                              No support cases found
                             </p>
+
                             <p className="text-xs text-slate-400">
-                              Your support requests will appear here.
+                              Create a support ticket if you need assistance.
                             </p>
                           </div>
                         </td>
                       </tr>
                     ) : (
                       <AnimatePresence>
-                        {tickets.map((t, idx) => (
+                        {tickets.map((ticket) => (
                           <motion.tr
-                            key={t._id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{
-                              duration: 0.2,
-                              delay: idx * 0.03,
-                            }}
-                            className="hover:bg-slate-50 transition-colors group"
+                            key={ticket._id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="group hover:bg-slate-50 transition-colors"
                           >
                             <td className="px-6 py-5">
-                              <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                {t.subject}
+                              <p className="text-sm font-semibold text-slate-900">
+                                {ticket.subject}
                               </p>
 
                               <Badge
                                 variant="outline"
-                                className="text-xs font-medium border-slate-200 text-slate-500 rounded-md mt-2"
+                                className="mt-2 rounded-md border-slate-200 text-xs text-slate-500"
                               >
-                                {t.category}
+                                {ticket.category}
                               </Badge>
                             </td>
 
                             <td className="px-6 py-5 font-mono text-xs text-slate-500">
-                              {t.ticketId}
+                              {ticket.ticketId || "—"}
                             </td>
 
                             <td className="px-6 py-5">
-                              <PriorityBadge priority={t.priority} />
+                              <PriorityBadge priority={ticket.priority} />
                             </td>
 
                             <td className="px-6 py-5">
                               <Badge
-                                className={`${getStatusStyles(
-                                  t.status,
-                                )} border rounded-md text-xs font-semibold uppercase px-2.5 py-1`}
+                                className={`${getStatusStyles(ticket.status)} rounded-md border px-2.5 py-1 text-xs font-semibold uppercase`}
                               >
-                                {t.status.replace("_", " ")}
+                                {(ticket.status || "UNKNOWN").replaceAll(
+                                  "_",
+                                  " ",
+                                )}
                               </Badge>
                             </td>
 
                             <td className="px-6 py-5 text-right">
                               <Button
+                                type="button"
                                 variant="ghost"
                                 onClick={() =>
                                   navigate(
-                                    `/dashboard/support/tickets/${t._id}`,
+                                    `/dashboard/support/tickets/${ticket._id}`,
                                   )
                                 }
-                                className="h-9 w-9 p-0 rounded-lg hover:bg-slate-900 hover:text-white transition-all"
+                                aria-label="View ticket"
+                                className="h-9 w-9 rounded-lg p-0 hover:bg-slate-900 hover:text-white"
                               >
                                 <FiChevronRight size={18} />
                               </Button>
@@ -445,115 +377,74 @@ const GeneralSupportPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Pagination */}
           {!isLoading && !isMyTicketsError && pagination.pages > 1 && (
-            <div className="flex items-center justify-between gap-4 text-sm text-slate-500">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
               <span>
                 Page {pagination.page} of {pagination.pages}
               </span>
+
               <div className="flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   disabled={pagination.page <= 1}
-                  onClick={() =>
-                    setFilters((current) => ({
-                      ...current,
-                      page: Math.max(current.page - 1, 1),
-                    }))
-                  }
-                  className="border-slate-200 bg-white"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  className="border-slate-200"
                 >
                   Previous
                 </Button>
+
                 <Button
                   type="button"
                   variant="outline"
                   disabled={pagination.page >= pagination.pages}
-                  onClick={() =>
-                    setFilters((current) => ({
-                      ...current,
-                      page: Math.min(current.page + 1, pagination.pages),
-                    }))
-                  }
-                  className="border-slate-200 bg-white"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  className="border-slate-200"
                 >
                   Next
                 </Button>
               </div>
             </div>
           )}
-        </motion.div>
+        </motion.section>
       </motion.main>
     </div>
   );
 };
 
-// Metric Card
-const MetricCard = ({ label, val, icon, color }) => (
-  <motion.div variants={itemVariants} className="w-full">
-    <Card className="border border-slate-200 shadow-sm rounded-xl bg-white group hover:shadow-md transition-all duration-300">
-      <CardContent className="p-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-            {label}
-          </p>
-
-          <p className="text-3xl font-bold text-slate-900 tracking-tight">
-            {val}
-          </p>
-        </div>
-
-        <div
-          className={`h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center ${color} text-xl transition-transform group-hover:scale-105`}
-        >
-          {icon}
-        </div>
-      </CardContent>
-    </Card>
-  </motion.div>
-);
-
 // Priority Badge
 const PriorityBadge = ({ priority }) => {
   const styles = {
-    LOW: "text-slate-600 bg-slate-100",
-    MEDIUM: "text-blue-600 bg-blue-50",
-    HIGH: "text-orange-600 bg-orange-50",
-    EMERGENCY: "text-red-600 bg-red-50 font-bold",
+    LOW: "bg-slate-100 text-slate-600",
+    MEDIUM: "bg-blue-50 text-blue-600",
+    HIGH: "bg-orange-50 text-orange-600",
+    EMERGENCY: "bg-red-50 text-red-600",
   };
 
   return (
     <span
-      className={`text-xs font-semibold px-2.5 py-1 rounded-md ${
+      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
         styles[priority] || styles.LOW
       }`}
     >
-      {priority}
+      {priority || "LOW"}
     </span>
   );
 };
 
-// Status Styles
+// Ticket Status Styles
 const getStatusStyles = (status) => {
-  switch (status) {
-    case "OPEN":
-      return "bg-emerald-50 text-emerald-700 border-emerald-100";
+  const styles = {
+    OPEN: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    IN_REVIEW: "bg-blue-50 text-blue-700 border-blue-100",
+    WAITING: "bg-amber-50 text-amber-700 border-amber-100",
+    RESOLVED: "bg-slate-100 text-slate-600 border-slate-200",
+    CLOSED: "bg-slate-200 text-slate-500 border-transparent",
+  };
 
-    case "IN_REVIEW":
-      return "bg-indigo-50 text-indigo-700 border-indigo-100";
-
-    case "WAITING":
-      return "bg-amber-50 text-amber-700 border-amber-100";
-
-    case "RESOLVED":
-      return "bg-slate-100 text-slate-600 border-slate-200";
-
-    case "CLOSED":
-      return "bg-slate-200 text-slate-500 border-transparent";
-
-    default:
-      return "bg-slate-50 text-slate-500 border-slate-200";
-  }
+  return styles[status] || "bg-slate-50 text-slate-500 border-slate-200";
 };
 
 export default GeneralSupportPage;

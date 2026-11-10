@@ -3,7 +3,6 @@ import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 
 import UserLayout from "@/layout/UserLayout";
 import AdminLayout from "@/layout/AdminLayout";
-import SupportWrapper from "@/components/layout/SupportWrapper";
 import ProtectedRoute from "@/pages/auth/form/ProtectRoutes";
 
 const HomePage = lazy(() => import("@/pages/users/home/HomePage"));
@@ -70,14 +69,8 @@ export const router = createBrowserRouter([
       { path: "my-applications", element: withSuspense(<UserApplications />) },
       { path: "notifications", element: withSuspense(<NotificationCenter />) },
       { path: "profile", element: withSuspense(<ProfilePage />) },
-      {
-        path: "support",
-        element: <SupportWrapper />,
-        children: [
-          { index: true, element: withSuspense(<SupportPage />) },
-          { path: "tickets/:id", element: withSuspense(<TicketDetailPage />) },
-        ],
-      },
+      { path: "support", element: withSuspense(<SupportPage />) },
+      { path: "support/tickets/:id", element: withSuspense(<TicketDetailPage />) },
       { path: "*", element: withSuspense(<NotFoundPage />) },
     ],
   },

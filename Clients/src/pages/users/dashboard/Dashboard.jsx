@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FiActivity,
   FiBell,
@@ -9,14 +9,17 @@ import {
   FiLogOut,
   FiMenu,
   FiPlusCircle,
+  FiSearch,
   FiShield,
   FiUser,
   FiX,
 } from "react-icons/fi";
 import { useAuthStore } from "@/stores/authStore";
+import InsuranceChatbot from "@/pages/users/support/Chatbot";
 
 const dashboardLinks = [
   { label: "Overview", to: "/dashboard", icon: FiHome, end: true },
+  { label: "Browse Plans", to: "/dashboard/plans", icon: FiSearch },
   { label: "My Policies", to: "/dashboard/my-policies", icon: FiShield },
   { label: "Claims", to: "/dashboard/show/claims", icon: FiFileText },
   { label: "Submit Claim", to: "/dashboard/claims/new", icon: FiPlusCircle },
@@ -51,6 +54,8 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isTicketConversation = /\/dashboard\/support\/tickets\/[^/]+$/.test(pathname);
   const firstName = user?.fullName?.trim().split(/\s+/)[0] || "Account";
 
   const handleLogout = () => {
@@ -117,6 +122,7 @@ export default function Dashboard() {
           <Outlet />
         </div>
       </main>
+      {!isTicketConversation && <InsuranceChatbot />}
     </div>
   );
 }
