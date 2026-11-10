@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTickets } from "@/hooks/useTicket";
 import { Button } from "@/components/ui/button";
-import { FiArrowLeft, FiSend, FiMoreVertical, FiCheck } from "react-icons/fi";
+import { FiArrowLeft, FiSend, FiCheck } from "react-icons/fi";
 import { Loader2, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react"; // Remember to install this
 
@@ -66,43 +66,38 @@ const AdminLiveChat = () => {
 
   if (isLoadingDetails)
     return (
-      <div className="h-screen flex items-center justify-center bg-[#8DB0D1]">
+      <div className="flex h-[calc(100dvh-7rem)] min-h-[28rem] items-center justify-center overflow-hidden rounded-2xl bg-[#8DB0D1]">
         <Loader2 className="animate-spin text-white" size={32} />
       </div>
     );
 
   return (
-    <div className="h-screen flex flex-col bg-[#8DB0D1] font-sans overflow-hidden">
-      {/* --- Telegram Header --- */}
-      <header className="bg-[#517DA2] text-white px-4 py-2 flex items-center justify-between shadow-md z-30">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="text-white hover:bg-black/10 rounded-full"
-          >
-            <FiArrowLeft size={20} />
-          </Button>
-          <div className="flex items-center gap-3 cursor-pointer">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center font-bold text-lg shadow-inner text-white">
-              {ticketDetails?.user?.name?.charAt(0) || "C"}
-            </div>
-            <div>
-              <h2 className="font-bold text-[16px] leading-tight">
-                {ticketDetails?.user?.name || "Customer"}
-              </h2>
-              <p className="text-[12px] text-blue-100 opacity-80">
-                {ticketDetails?.status === "OPEN"
-                  ? "online"
-                  : "last seen recently"}
-              </p>
-            </div>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon" className="text-white rounded-full">
-          <FiMoreVertical size={20} />
+    <div className="flex h-[calc(100dvh-7rem)] min-h-[28rem] flex-col overflow-hidden rounded-2xl bg-[#8DB0D1] font-sans">
+      <header className="z-30 flex items-center gap-3 border-b border-slate-200 bg-white px-3 py-2.5 text-slate-800 shadow-sm sm:px-5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/admin/support/tickets")}
+          aria-label="Back to support tickets"
+          className="shrink-0 rounded-full text-slate-600 hover:bg-slate-100"
+        >
+          <FiArrowLeft size={20} />
         </Button>
+        <div className="min-w-0">
+          <h2 className="truncate text-sm font-semibold sm:text-base">
+            {ticketDetails?.user?.name || "Customer conversation"}
+          </h2>
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                ticketDetails?.status === "OPEN"
+                  ? "bg-emerald-500"
+                  : "bg-slate-400"
+              }`}
+            />
+            {ticketDetails?.status === "OPEN" ? "Ticket is active" : "Ticket is closed"}
+          </p>
+        </div>
       </header>
 
       {/* --- Telegram Chat Area --- */}
@@ -111,8 +106,16 @@ const AdminLiveChat = () => {
 
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 md:px-[20%] lg:px-[30%] space-y-2 relative z-10 custom-scrollbar scroll-smooth"
+          className="relative z-10 flex-1 space-y-2 overflow-y-auto px-4 py-4 sm:px-6 lg:px-8 scroll-smooth"
         >
+          <div className="mb-6 flex justify-center">
+            <span className="rounded-full bg-black/10 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+              {new Date(ticketDetails?.createdAt).toLocaleDateString(undefined, {
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
           {ticketDetails?.messages?.map((m, i) => {
             const ticketOwnerId =
               typeof ticketDetails.user === "object"
@@ -132,7 +135,7 @@ const AdminLiveChat = () => {
                 <div
                   className={`relative max-w-[85%] px-3 py-1.5 shadow-sm transition-all ${
                     isMe
-                      ? "bg-[#EFFDDE] text-slate-800 rounded-2xl rounded-tr-sm"
+                      ? "bg-blue-100 text-slate-800 rounded-2xl rounded-tr-none"
                       : "bg-white text-slate-800 rounded-2xl rounded-tl-sm"
                   }`}
                 >
@@ -161,7 +164,7 @@ const AdminLiveChat = () => {
         </div>
 
         {/* --- Telegram Style Admin Input --- */}
-        <footer className="p-2 md:px-[20%] lg:px-[30%] bg-[#E7EBF0] relative z-40">
+        <footer className="relative z-40 bg-[#E7EBF0] p-2 sm:px-4 lg:px-6">
           {showEmoji && (
             <div
               ref={emojiPickerRef}
@@ -232,15 +235,6 @@ const AdminLiveChat = () => {
         </footer>
       </main>
 
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 10px;
-        }
-      `}</style>
     </div>
   );
 };
