@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// NotificationCenter.jsx
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,10 +8,10 @@ import {
   HiOutlineCreditCard,
   HiOutlineDocumentText,
   HiOutlineTrash,
+  HiOutlineCheck,
 } from "react-icons/hi";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNoitification";
 
@@ -25,6 +26,22 @@ const formatRelativeTime = (date) => {
   return new Date(date).toLocaleDateString();
 };
 
+// --- Helper: which day bucket a notification belongs to ---
+const getDayBucket = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const that = new Date(date);
+  that.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((today - that) / 86400000);
+
+  if (diffDays <= 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  return "Earlier";
+};
+
+const BUCKET_ORDER = ["Today", "Yesterday", "Earlier"];
+
+// Same colors as before
 const getTypeStyles = (category) => {
   const styles = {
     claim: {
@@ -73,6 +90,17 @@ export default function NotificationCenter() {
       ? notifications.filter((n) => !n.isRead)
       : notifications;
 
+  // Group into Today / Yesterday / Earlier, keeping the original order inside each group
+  const groups = useMemo(() => {
+    const buckets = { Today: [], Yesterday: [], Earlier: [] };
+    displayNotifications.forEach((n) =>
+      buckets[getDayBucket(n.createdAt)].push(n),
+    );
+    return BUCKET_ORDER.filter((label) => buckets[label].length > 0).map(
+      (label) => ({ label, items: buckets[label] }),
+    );
+  }, [displayNotifications]);
+
   const handleViewDetails = async (notif) => {
     if (!notif.isRead) await markAsRead(notif._id);
 
@@ -92,180 +120,194 @@ export default function NotificationCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-              Notifications
-              {unreadCount > 0 && (
-                <Badge
-                  variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 animate-in fade-in zoom-in duration-300"
-                >
-                  {unreadCount} New
-                </Badge>
-              )}
-            </h1>
-            <p className="text-slate-500 mt-1">
-              Stay updated with your account activity.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleMarkAll}
-            disabled={unreadCount === 0 || isProcessingAll}
-            className="font-semibold"
-          >
-            {isProcessingAll ? "Updating..." : "Mark all as read"}
-          </Button>
-        </header>
-
-        {/* Filters */}
-        <Tabs
-          defaultValue="all"
-          className="w-full mb-6"
-          onValueChange={setActiveTab}
+    <div className="w-full px-4 py-6 sm:px-6 sm:py-10">
+      {/* Header */}
+      <header className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">
+            Notifications
+          </h1>
+          <p className="mt-2 text-slate-600">
+            {unreadCount > 0
+              ? `You have ${unreadCount} unread ${
+                  unreadCount === 1 ? "notification" : "notifications"
+                }.`
+              : "You're all caught up."}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleMarkAll}
+          disabled={unreadCount === 0 || isProcessingAll}
+          className="self-start font-semibold md:self-auto"
         >
-          <TabsList className="bg-transparent border-b border-slate-200 w-full justify-start rounded-none h-auto p-0 gap-6">
-            {["all", "unread", "claim", "policy", "payment"].map((tab) => (
-              <TabsTrigger
-                key={tab}
-                value={tab}
-                className="capitalize data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 border-b-2 border-transparent rounded-none pb-3 px-1 font-bold transition-all"
-              >
-                {tab}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          {isProcessingAll ? "Updating..." : "Mark all as read"}
+        </Button>
+      </header>
 
-        {/* List Content */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <NotificationLoadingSkeleton />
-          ) : (
-            <AnimatePresence mode="popLayout" initial={false}>
-              {displayNotifications.map((notif) => {
-                const styles = getTypeStyles(notif.category);
-                return (
-                  <motion.div
-                    key={notif._id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -10, transition: { duration: 0.2 } }}
-                    className={`group flex gap-4 p-5 rounded-2xl border transition-all ${
-                      !notif.isRead
-                        ? "bg-white border-blue-100 shadow-sm"
-                        : "bg-slate-50/60 border-transparent opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    {/* Unread Dot */}
-                    {!notif.isRead && (
-                      <div
-                        className="w-2 h-2 bg-blue-600 rounded-full mt-5 shrink-0"
-                        aria-hidden="true"
-                      />
-                    )}
+      {/* Filters */}
+      <Tabs
+        defaultValue="all"
+        className="mb-2 w-full"
+        onValueChange={setActiveTab}
+      >
+        <TabsList className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none border-b border-slate-200 bg-transparent p-0">
+          {["all", "unread", "claim", "policy", "payment"].map((tab) => (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              className="rounded-none border-b-2 border-transparent px-1 pb-3 font-semibold capitalize transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+            >
+              {tab}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
-                    <div
-                      className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-xl ${styles.bg} ${styles.color}`}
+      {/* Feed */}
+      {isLoading ? (
+        <NotificationLoadingSkeleton />
+      ) : (
+        groups.map((group) => (
+          <section key={group.label}>
+            <h2 className="mb-1 mt-8 text-sm font-semibold text-slate-500">
+              {group.label}
+            </h2>
+
+            <ul className="divide-y divide-slate-100 border-t border-slate-100">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {group.items.map((notif) => {
+                  const styles = getTypeStyles(notif.category);
+                  return (
+                    <motion.li
+                      key={notif._id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{
+                        opacity: 0,
+                        x: -10,
+                        transition: { duration: 0.2 },
+                      }}
+                      className="group relative flex items-start gap-2 py-4 pl-5"
                     >
-                      {styles.icon}
-                    </div>
+                      {/* Unread dot in the left margin */}
+                      {!notif.isRead && (
+                        <span
+                          aria-label="Unread"
+                          className="absolute left-0 top-[26px] h-2 w-2 rounded-full bg-blue-600"
+                        />
+                      )}
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div
-                          className="cursor-pointer"
-                          onClick={() => handleViewDetails(notif)}
+                      {/* The whole row is the click target */}
+                      <button
+                        type="button"
+                        onClick={() => handleViewDetails(notif)}
+                        className="flex min-w-0 flex-1 items-start gap-4 rounded-lg text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                      >
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${styles.bg} ${styles.color}`}
                         >
-                          <h3
-                            className={`font-bold truncate ${!notif.isRead ? "text-slate-900" : "text-slate-600"}`}
+                          {styles.icon}
+                        </span>
+
+                        <span className="block min-w-0 flex-1">
+                          <span className="flex items-baseline justify-between gap-4">
+                            <span
+                              className={`block truncate ${
+                                !notif.isRead
+                                  ? "font-semibold text-slate-900"
+                                  : "font-medium text-slate-600"
+                              }`}
+                            >
+                              {notif.title}
+                            </span>
+                            <time className="shrink-0 text-xs text-slate-500">
+                              {formatRelativeTime(notif.createdAt)}
+                            </time>
+                          </span>
+                          <span
+                            className={`mt-0.5 line-clamp-2 block max-w-2xl text-sm leading-relaxed ${
+                              !notif.isRead
+                                ? "text-slate-600"
+                                : "text-slate-500"
+                            }`}
                           >
-                            {notif.title}
-                          </h3>
-                          <p className="text-slate-500 text-sm mt-0.5 line-clamp-2 leading-relaxed">
                             {notif.message}
-                          </p>
-                        </div>
-                        <time className="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap pt-1">
-                          {formatRelativeTime(notif.createdAt)}
-                        </time>
-                      </div>
+                          </span>
+                        </span>
+                      </button>
 
-                      <div className="mt-4 flex items-center gap-3">
-                        <Button
-                          onClick={() => handleViewDetails(notif)}
-                          variant="secondary"
-                          size="sm"
-                          className="h-8 px-4 text-xs font-bold rounded-lg bg-white border border-slate-200 hover:bg-slate-50 shadow-sm"
-                        >
-                          View Details
-                        </Button>
+                      {/* Row actions: always visible on touch, shown on hover/focus on desktop */}
+                      <div className="flex shrink-0 items-center gap-1 md:opacity-0 md:transition-opacity md:group-focus-within:opacity-100 md:group-hover:opacity-100">
                         {!notif.isRead && (
                           <button
+                            type="button"
                             onClick={() => markAsRead(notif._id)}
-                            className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                            aria-label="Mark as read"
+                            title="Mark as read"
+                            className="rounded-md p-2 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
                           >
-                            Mark as read
+                            <HiOutlineCheck size={18} />
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => deleteNotification(notif._id)}
+                          aria-label="Delete notification"
+                          title="Delete"
+                          className="rounded-md p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        >
+                          <HiOutlineTrash size={18} />
+                        </button>
                       </div>
-                    </div>
+                    </motion.li>
+                  );
+                })}
+              </AnimatePresence>
+            </ul>
+          </section>
+        ))
+      )}
 
-                    <button
-                      onClick={() => deleteNotification(notif._id)}
-                      aria-label="Delete notification"
-                      className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all p-1 self-start"
-                    >
-                      <HiOutlineTrash size={18} />
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && displayNotifications.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200"
-            >
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 text-2xl">
-                <HiOutlineBell />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">
-                All caught up!
-              </h3>
-              <p className="text-slate-500">No new updates in this category.</p>
-            </motion.div>
-          )}
-        </div>
-      </div>
+      {/* Empty State */}
+      {!isLoading && displayNotifications.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center py-24 text-center"
+        >
+          <span className="mb-4 text-4xl text-slate-300">
+            <HiOutlineBell />
+          </span>
+          <h2 className="font-serif text-xl font-semibold text-slate-900">
+            All caught up!
+          </h2>
+          <p className="mt-1 text-slate-500">
+            No new updates in this category.
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 }
 
 function NotificationLoadingSkeleton() {
-  return [1, 2, 3].map((i) => (
-    <div
-      key={i}
-      className="flex gap-4 p-5 rounded-2xl border border-slate-100 bg-white"
-    >
-      <Skeleton className="w-12 h-12 rounded-xl bg-slate-100" />
-      <div className="flex-1 space-y-3">
-        <div className="flex justify-between">
-          <Skeleton className="h-4 w-1/3 bg-slate-100" />
-          <Skeleton className="h-3 w-12 bg-slate-100" />
+  return (
+    <div className="mt-8 divide-y divide-slate-100 border-t border-slate-100">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex gap-4 py-4 pl-5">
+          <Skeleton className="h-10 w-10 rounded-full bg-slate-100" />
+          <div className="flex-1 space-y-3">
+            <div className="flex justify-between">
+              <Skeleton className="h-4 w-1/3 bg-slate-100" />
+              <Skeleton className="h-3 w-12 bg-slate-100" />
+            </div>
+            <Skeleton className="h-3 w-full max-w-2xl bg-slate-100" />
+          </div>
         </div>
-        <Skeleton className="h-3 w-full bg-slate-50" />
-      </div>
+      ))}
     </div>
-  ));
+  );
 }
