@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/stores/authStore";
@@ -9,9 +9,12 @@ import RegisterForm from "./RegisterForm";
 
 export default function AuthForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, login, register } = useAuthStore();
 
-  const [activeMode, setActiveMode] = useState("login");
+  const [activeMode, setActiveMode] = useState(
+    searchParams.get("mode") === "register" ? "register" : "login",
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({

@@ -2,8 +2,17 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FiArrowRight } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function HeroSection() {
+  const { authReady, isAuthenticated, user } = useAuthStore();
+  const isLoggedIn = authReady && isAuthenticated;
+  const ctaPath = !isLoggedIn
+    ? "/auth"
+    : user?.role === "admin"
+      ? "/admin/dashboard"
+      : "/dashboard/plans";
+
   return (
     <section className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-6">
       <div className="max-w-3xl text-center">
@@ -35,24 +44,13 @@ export default function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
         >
-          {/* Plans are previewed on this public page; account features live in the dashboard. */}
-          <a href="#insurance-plans">
+          <Link to={ctaPath}>
             <Button
               size="lg"
               className="px-8 flex items-center gap-2 w-full md:w-auto cursor-pointer"
             >
-              Explore Insurance Plans <FiArrowRight />
-            </Button>
-          </a>
-
-          {/* Login Button - Redirects to /auth */}
-          <Link to="/auth">
-            <Button
-              size="lg"
-              variant="outline"
-              className="px-8 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 w-full md:w-auto cursor-pointer"
-            >
-              Get Protected
+              {isLoggedIn ? "Explore Insurance Plans" : "Login / Register"}{" "}
+              <FiArrowRight />
             </Button>
           </Link>
         </motion.div>
