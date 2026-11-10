@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FiActivity,
   FiBell,
@@ -76,9 +76,13 @@ export default function Dashboard() {
           >
             {isSidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
           </button>
-          <NavLink to="/dashboard" className="text-lg font-bold tracking-tight">
-            Neural<span className="text-blue-600">Sure</span>
-          </NavLink>
+          <Link to="/" aria-label="NeuralSure home" className="flex shrink-0 items-center">
+            <img
+              src="/logo.png"
+              alt="NeuralSure"
+              className="h-10 w-auto object-contain"
+            />
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <span className="hidden text-sm text-slate-500 sm:inline">
