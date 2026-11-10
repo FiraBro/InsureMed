@@ -142,36 +142,6 @@ export default function Sidebar() {
       </div>
 
       {/* Profile Section */}
-      <div className="p-4 mt-auto">
-        <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-zinc-200">
-              <img
-                src={`https://api.dicebear.com/7.x/shapes/svg?seed=${
-                  user?.fullName || "Admin"
-                }`}
-                alt="Avatar"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-zinc-900 truncate">
-                {user?.fullName || "Administrator"}
-              </p>
-              <p className="text-[10px] font-medium text-zinc-500 truncate uppercase tracking-wider">
-                {user?.role || "Super Admin"}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-zinc-600 bg-white border border-zinc-200 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 active:scale-[0.98]"
-          >
-            <FiLogOut className="text-sm" />
-            Sign Out
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }
