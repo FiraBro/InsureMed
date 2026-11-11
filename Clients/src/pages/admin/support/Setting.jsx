@@ -1,111 +1,78 @@
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useEnterpriseDashboard } from "@/hooks/useAdmin";
 import EnterpriseAnalytics from "./EnerpriseAnalytics";
 import SystemSettings from "./SystemSettings";
-import { FiBarChart2, FiSettings, FiActivity } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { FiBarChart2, FiSettings, FiActivity, FiLoader } from "react-icons/fi";
 
 export default function AdminControlCenter() {
   const { adminData, settings, isLoading, refresh } = useEnterpriseDashboard();
-  // 1. Track active tab state manually for the animation key
   const [activeTab, setActiveTab] = useState("analytics");
 
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            className="h-12 w-12 rounded-full border-4 border-blue-600 border-t-transparent"
-          />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-            Syncing Enterprise Data
-          </p>
+        <div className="flex flex-col items-center gap-3">
+          <FiLoader className="animate-spin text-blue-600" size={32} />
+          <p className="text-sm text-slate-500">Syncing Enterprise Data</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 lg:p-10 font-manrope overflow-x-hidden">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* HEADER */}
-        <header className="flex items-center justify-between">
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 px-4 py-8 md:px-8">
+      <div className="w-full space-y-6">
+        {/* Header */}
+        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-slate-900 uppercase leading-none">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
               Control Center
             </h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+            <p className="mt-1 text-sm text-slate-500">
               IMS Enterprise v2.0 • {settings?.systemName || "Standard Mode"}
             </p>
           </div>
 
-          <button
+          <Button
+            variant="outline"
             onClick={refresh}
-            className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all border border-gray-200"
+            className="h-10 gap-2 border-slate-300 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50"
           >
             <FiActivity className="text-blue-600" /> Live Refresh
-          </button>
+          </Button>
         </header>
 
         <Tabs
           defaultValue="analytics"
           onValueChange={setActiveTab}
-          className="w-full space-y-8"
+          className="w-full space-y-6"
         >
-          <TabsList className="relative h-14 w-fit items-center justify-start rounded-2xl bg-white p-1 shadow-sm border border-slate-100">
+          <TabsList className="h-10 w-fit justify-start rounded-lg bg-slate-100 p-1">
             <TabsTrigger
               value="analytics"
-              className="relative z-10 flex items-center gap-2 px-8 py-3 rounded-xl data-[state=active]:text-white transition-colors duration-300 font-bold data-[state=active]:bg-blue-500"
+              className="gap-2 rounded-md px-5 text-sm text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
             >
               <FiBarChart2 /> Business Intelligence
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="relative z-10 flex items-center gap-2 px-8 py-3 rounded-xl data-[state=active]:text-white transition-colors duration-300 font-bold data-[state=active]:bg-slate-900"
+              className="gap-2 rounded-md px-5 text-sm text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
             >
               <FiSettings /> System Config
             </TabsTrigger>
           </TabsList>
 
-          {/* 2. THE ANIMATION WRAPPER */}
-          <div className="relative min-h-[500px]">
-            <AnimatePresence mode="wait">
-              {/* Use an internal loading state or the isLoading from your hook */}
-              {isLoading ? (
-                <motion.div
-                  key="loader"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm rounded-[2rem] z-50"
-                >
-                  <div className="h-10 w-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                  <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    Fetching {activeTab} Data...
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {activeTab === "analytics" ? (
-                    <EnterpriseAnalytics data={adminData} />
-                  ) : (
-                    <SystemSettings
-                      initialSettings={settings}
-                      onUpdateSuccess={refresh}
-                    />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="min-h-[500px]">
+            {activeTab === "analytics" ? (
+              <EnterpriseAnalytics data={adminData} />
+            ) : (
+              <SystemSettings
+                initialSettings={settings}
+                onUpdateSuccess={refresh}
+              />
+            )}
           </div>
         </Tabs>
       </div>

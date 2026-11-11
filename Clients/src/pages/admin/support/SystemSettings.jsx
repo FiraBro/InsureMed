@@ -6,13 +6,12 @@ import {
   FiPercent,
   FiPower,
   FiLoader,
-  FiCheckCircle,
 } from "react-icons/fi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { adminService } from "@/services/adminService";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
 
 export default function SystemSettings({ initialSettings, onUpdateSuccess }) {
   const [formData, setFormData] = useState(initialSettings || {});
@@ -36,52 +35,64 @@ export default function SystemSettings({ initialSettings, onUpdateSuccess }) {
     }
   };
 
+  const labelClass = "text-sm font-medium text-slate-700";
+  const inputClass =
+    "h-11 border-slate-300 bg-white pl-10 text-slate-900 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20";
+
   return (
     <div className="max-w-2xl">
-      <div className="bg-white rounded-[2.5rem] shadow-xl p-8 space-y-8 border border-slate-100">
-        <div className="space-y-6">
-          {/* Agency Name */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">
-              Agency Identity
-            </label>
-            <div className="relative">
-              <FiGlobe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-              <Input
-                value={formData.systemName || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, systemName: e.target.value })
-                }
-                className="h-14 pl-12 rounded-2xl bg-slate-50 border-none font-bold focus-visible:ring-2 focus-visible:ring-blue-500"
-              />
-            </div>
+      <Card className="overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
+        <CardContent className="divide-y divide-slate-200 p-0">
+          {/* Identity */}
+          <section className="space-y-5 p-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">
+              <label htmlFor="systemName" className={labelClass}>
+                Agency Identity
+              </label>
+              <div className="relative">
+                <FiGlobe className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input
+                  id="systemName"
+                  value={formData.systemName || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, systemName: e.target.value })
+                  }
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="contactEmail" className={labelClass}>
                 Support Channel Email
               </label>
               <div className="relative">
-                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                <FiMail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <Input
+                  id="contactEmail"
                   value={formData.contactEmail || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, contactEmail: e.target.value })
                   }
-                  className="h-14 pl-12 rounded-2xl bg-slate-50 border-none font-bold focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Tax & status */}
+          <section className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
             {/* Global Tax */}
-            <div className="p-6 bg-slate-50 rounded-3xl space-y-1">
-              <div className="flex items-center gap-2 text-slate-400 mb-2">
-                <FiPercent size={12} />
-                <p className="text-[10px] font-black uppercase tracking-widest">
-                  Global Tax
-                </p>
-              </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <label
+                htmlFor="globalTaxRate"
+                className="flex items-center gap-2 text-sm font-medium text-slate-700"
+              >
+                <FiPercent size={14} className="text-slate-400" />
+                Global Tax
+              </label>
               <Input
+                id="globalTaxRate"
                 type="number"
                 value={formData.globalTaxRate || 0}
                 onChange={(e) =>
@@ -90,24 +101,28 @@ export default function SystemSettings({ initialSettings, onUpdateSuccess }) {
                     globalTaxRate: Number(e.target.value),
                   })
                 }
-                className="bg-transparent border-none p-0 text-3xl font-black h-auto focus-visible:ring-0"
+                className="mt-2 h-auto border-none bg-transparent p-0 text-3xl font-semibold tabular-nums text-slate-900 shadow-none focus-visible:ring-0"
               />
             </div>
 
-            {/* Maintenance Toggle */}
+            {/* Maintenance toggle */}
             <div
-              className={`p-6 rounded-3xl transition-all duration-500 ${
-                formData.maintenanceMode ? "bg-red-50" : "bg-slate-50"
+              className={`rounded-lg border p-4 transition-colors ${
+                formData.maintenanceMode
+                  ? "border-red-200 bg-red-50"
+                  : "border-slate-200 bg-slate-50"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <FiPower size={12} />
-                  <p className="text-[10px] font-black uppercase tracking-widest">
-                    Status
-                  </p>
-                </div>
+                <label
+                  htmlFor="maintenanceMode"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700"
+                >
+                  <FiPower size={14} className="text-slate-400" />
+                  Status
+                </label>
                 <input
+                  id="maintenanceMode"
                   type="checkbox"
                   checked={formData.maintenanceMode || false}
                   onChange={(e) =>
@@ -116,12 +131,12 @@ export default function SystemSettings({ initialSettings, onUpdateSuccess }) {
                       maintenanceMode: e.target.checked,
                     })
                   }
-                  className="w-5 h-5 accent-red-600 cursor-pointer"
+                  className="h-5 w-5 cursor-pointer accent-red-600"
                 />
               </div>
               <p
-                className={`text-xs font-bold mt-2 ${
-                  formData.maintenanceMode ? "text-red-600" : "text-slate-400"
+                className={`mt-3 text-sm font-semibold ${
+                  formData.maintenanceMode ? "text-red-700" : "text-emerald-700"
                 }`}
               >
                 {formData.maintenanceMode
@@ -129,32 +144,21 @@ export default function SystemSettings({ initialSettings, onUpdateSuccess }) {
                   : "SYSTEM LIVE"}
               </p>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full py-8 rounded-[2rem] font-black uppercase tracking-widest shadow-xl transition-all bg-blue-500 hover:bg-blue-400 text-white relative overflow-hidden"
-        >
-          <span className="flex items-center gap-3">
-            {isSaving ? (
-              <FiLoader className="animate-spin text-xl" />
-            ) : (
-              <FiSave className="text-xl" />
-            )}
-            {isSaving ? "Syncing Logic..." : "Commit System Changes"}
-          </span>
-          {isSaving && (
-            <motion.div
-              className="absolute bottom-0 left-0 h-1 bg-blue-400"
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 2 }}
-            />
-          )}
-        </Button>
-      </div>
+          {/* Footer */}
+          <div className="bg-slate-50 px-6 py-4">
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-11 w-full gap-2 bg-blue-600 text-white hover:bg-blue-700 sm:w-auto sm:px-6"
+            >
+              {isSaving ? <FiLoader className="animate-spin" /> : <FiSave />}
+              {isSaving ? "Syncing Logic..." : "Commit System Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
