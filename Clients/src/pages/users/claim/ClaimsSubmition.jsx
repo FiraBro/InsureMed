@@ -12,15 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Upload,
-  FileText,
-  Shield,
-  DollarSign,
-  Info,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import { Upload, Shield, DollarSign, Info, CheckCircle2 } from "lucide-react";
 import { claimService } from "@/services/claimService";
 
 export default function ClaimsSubmition() {
@@ -71,65 +63,64 @@ export default function ClaimsSubmition() {
     }
   };
 
+  const labelClass = "text-sm font-medium text-slate-700";
+  const fieldClass =
+    "h-11 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20";
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Submit a New Claim
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Provide the details of the incident to initiate your claim process.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs">
-            Save Draft
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-            View Guidelines
-          </Button>
-        </div>
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Submit a New Claim
+        </h1>
+        <p className="mt-1.5 text-sm text-slate-500">
+          Provide the details of the incident to initiate your claim process.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Main Form Area */}
-        <div className="lg:col-span-8 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <div className="bg-slate-50/50 px-6 py-3 border-b border-slate-200">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Step 1: Policy & Type
-                </span>
-              </div>
-              <CardContent className="p-6">
-                <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="lg:col-span-8">
+          <Card className="overflow-hidden rounded-xl border-slate-200 shadow-sm">
+            <CardContent className="divide-y divide-slate-200 p-0">
+              {/* Section 1 */}
+              <section className="space-y-5 p-6">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">
+                    Policy & Type
+                  </h2>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    Tell us which policy this claim belongs to.
+                  </p>
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-slate-700">
+                    <Label htmlFor="policyId" className={labelClass}>
                       Policy Identification
                     </Label>
                     <div className="relative">
-                      <Shield className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <Shield className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
                       <Input
+                        id="policyId"
                         name="policyId"
                         value={formData.policyId}
                         onChange={handleChange}
                         placeholder="POL-000-000"
-                        className="pl-10 h-10 border-slate-200 focus:ring-blue-500/20 focus:border-blue-500"
+                        className={`${fieldClass} pl-10`}
                         required
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-slate-700">
-                      Claim Category
-                    </Label>
+                    <Label className={labelClass}>Claim Category</Label>
                     <Select
                       value={formData.claimType}
                       onValueChange={handleSelectChange}
                     >
-                      <SelectTrigger className="h-10 border-slate-200">
+                      <SelectTrigger className={fieldClass}>
                         <SelectValue placeholder="Select type..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -147,98 +138,103 @@ export default function ClaimsSubmition() {
                     </Select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </section>
 
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <div className="bg-slate-50/50 px-6 py-3 border-b border-slate-200">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Step 2: Incident Details
-                </span>
-              </div>
-              <CardContent className="p-6 space-y-6">
+              {/* Section 2 */}
+              <section className="space-y-5 p-6">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">
+                    Incident Details
+                  </h2>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    Describe what happened and attach any supporting files.
+                  </p>
+                </div>
+
                 <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-slate-700">
+                  <Label htmlFor="description" className={labelClass}>
                     Description of Event
                   </Label>
                   <Textarea
+                    id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Describe exactly what happened..."
-                    className="min-h-[120px] border-slate-200 focus:ring-blue-500/20"
+                    className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
                     required
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid gap-5 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-slate-700">
+                    <Label htmlFor="amount" className={labelClass}>
                       Estimated Claim Amount
                     </Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <DollarSign className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
                       <Input
+                        id="amount"
                         name="amount"
                         type="number"
                         value={formData.amount}
                         onChange={handleChange}
                         placeholder="0.00"
-                        className="pl-10 h-10 border-slate-200"
+                        className={`${fieldClass} pl-10`}
                         required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-slate-700">
+                    <Label htmlFor="doc-upload" className={labelClass}>
                       Supporting Evidence
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="doc-upload"
-                        type="file"
-                        onChange={handleFile}
-                        className="hidden"
-                      />
-                      <Label
-                        htmlFor="doc-upload"
-                        className="flex items-center justify-center w-full h-10 border border-dashed border-slate-300 rounded-md bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all text-xs font-medium text-slate-600"
-                      >
-                        <Upload className="h-3 w-3 mr-2" />
+                    <Input
+                      id="doc-upload"
+                      type="file"
+                      onChange={handleFile}
+                      className="sr-only"
+                    />
+                    <Label
+                      htmlFor="doc-upload"
+                      className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 text-sm font-normal text-slate-600 transition-colors hover:border-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <Upload className="h-4 w-4 shrink-0" />
+                      <span className="truncate">
                         {fileName ? fileName : "Upload Files (Max 10MB)"}
-                      </Label>
-                    </div>
+                      </span>
+                    </Label>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </section>
 
-            <div className="flex items-center justify-between p-2">
-              <div className="flex items-center text-xs text-slate-500 gap-2">
-                <Info className="h-3.5 w-3.5" />
-                Processing typically takes 7-10 business days.
+              {/* Footer */}
+              <div className="flex flex-col gap-4 bg-slate-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="flex items-center gap-2 text-sm text-slate-500">
+                  <Info className="h-4 w-4 shrink-0" />
+                  Processing typically takes 7-10 business days.
+                </p>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-11 rounded-lg bg-blue-600 px-6 text-white hover:bg-blue-700"
+                >
+                  {loading ? "Submitting..." : "Submit Claim Request"}
+                </Button>
               </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-11 rounded-lg shadow-md shadow-blue-200 transition-all"
-              >
-                {loading ? "Submitting..." : "Submit Claim Request"}
-              </Button>
-            </div>
-          </form>
-        </div>
+            </CardContent>
+          </Card>
+        </form>
 
-        {/* Sidebar Info Area */}
-        <div className="lg:col-span-4 space-y-4">
-          <Card className="bg-slate-900 text-white border-none">
+        {/* Sidebar */}
+        <aside className="lg:col-span-4">
+          <Card className="rounded-xl border-slate-200 shadow-sm">
             <CardContent className="p-6">
-              <h3 className="font-semibold flex items-center gap-2 mb-4">
-                <AlertCircle className="h-4 w-4 text-blue-400" />
+              <h3 className="text-base font-semibold text-slate-900">
                 Quick Requirements
               </h3>
-              <div className="space-y-4">
+              <ul className="mt-4 space-y-4">
                 {[
                   {
                     title: "Proof of Incident",
@@ -250,31 +246,20 @@ export default function ClaimsSubmition() {
                   },
                   { title: "Policy Status", desc: "Must be active & paid" },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <li key={i} className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
                     <div>
-                      <p className="text-xs font-medium">{item.title}</p>
-                      <p className="text-[11px] text-slate-400">{item.desc}</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {item.title}
+                      </p>
+                      <p className="text-sm text-slate-500">{item.desc}</p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </CardContent>
           </Card>
-
-          <div className="p-6 rounded-xl border border-blue-100 bg-blue-50/50">
-            <h4 className="text-sm font-bold text-blue-900 mb-1">Need Help?</h4>
-            <p className="text-xs text-blue-700 mb-4 leading-relaxed">
-              Our claims specialists are available 24/7 for urgent assistance.
-            </p>
-            <Button
-              variant="outline"
-              className="w-full bg-white text-blue-600 border-blue-200 hover:bg-blue-50 text-xs h-9"
-            >
-              Chat with Agent
-            </Button>
-          </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
