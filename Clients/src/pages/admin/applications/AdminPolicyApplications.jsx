@@ -21,76 +21,72 @@ import {
   FiUser,
   FiInbox,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
 import ApplicationDetailModal from "@/components/modal/ApplicationDetailModal";
 import { toast } from "react-toastify";
 
 const getStatusStyles = (status) => {
   const s = status?.toLowerCase();
   if (s === "approved")
-    return "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-50";
-  if (s === "pending") return "bg-zinc-100 text-zinc-500 border-zinc-200";
-  if (s === "rejected") return "bg-rose-50 text-rose-600 border-rose-100";
-  return "bg-gray-50 text-gray-400";
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (s === "pending") return "border-amber-200 bg-amber-50 text-amber-700";
+  if (s === "rejected") return "border-red-200 bg-red-50 text-red-700";
+  return "border-slate-200 bg-slate-50 text-slate-500";
 };
 
 const ApplicationRow = memo(
   ({ app, onApprove, onReject, onView, isProcessing }) => (
-    <TableRow className="hover:bg-blue-50/30 transition-all group border-none">
-      <TableCell className="px-8 py-5">
+    <TableRow className="h-16 border-slate-100 transition-colors hover:bg-slate-50">
+      <TableCell className="pl-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center font-bold text-xs shadow-lg">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold uppercase text-blue-700">
             {app.personal?.fullName?.[0] || <FiUser />}
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-zinc-900 text-xs uppercase tracking-wide">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-slate-900">
               {app.personal?.fullName}
-            </span>
-            <span className="text-[10px] text-zinc-400 lowercase">
+            </p>
+            <p className="truncate text-xs text-slate-500">
               {app.personal?.email}
-            </span>
+            </p>
           </div>
         </div>
       </TableCell>
-      <TableCell className="px-8 py-5">
-        <div className="flex flex-col">
-          <span className="font-black text-zinc-600 text-[10px] mb-1">
-            {app.planId?.name}
-          </span>
-          <span className="text-[9px] text-blue-600 font-bold uppercase tracking-widest">
-            Registry Node
-          </span>
-        </div>
+      <TableCell>
+        <p className="text-sm font-medium text-slate-900">{app.planId?.name}</p>
+        <p className="text-xs text-slate-500">Registry Node</p>
       </TableCell>
-      <TableCell className="px-8 py-5 font-bold text-zinc-500 text-[10px] uppercase">
+      <TableCell className="text-sm text-slate-600">
         {new Date(app.createdAt).toLocaleDateString()}
       </TableCell>
-      <TableCell className="px-8 py-5">
+      <TableCell>
         <Badge
-          className={`px-3 py-1 font-black text-[9px] uppercase tracking-wider border-none ${getStatusStyles(
-            app.status
+          variant="outline"
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize shadow-none ${getStatusStyles(
+            app.status,
           )}`}
         >
           {app.status}
         </Badge>
       </TableCell>
-      <TableCell className="px-8 py-5 text-right">
-        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <TableCell className="pr-6 text-right">
+        <div className="flex justify-end gap-1">
           <Button
             size="icon"
             variant="ghost"
-            className="h-9 w-9 rounded-xl hover:bg-white shadow-sm"
-            onClick={() => onView(app)} // 👈 This opens the modal
+            aria-label="View application"
+            className="h-9 w-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            onClick={() => onView(app)}
             disabled={isProcessing}
           >
-            <FiEye className="h-4 w-4 text-zinc-500" />
+            <FiEye className="h-4 w-4" />
           </Button>
           {app.status === "pending" && (
             <>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 rounded-xl hover:text-emerald-600"
+                aria-label="Approve application"
+                className="h-9 w-9 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
                 onClick={() => onApprove(app._id)}
                 disabled={isProcessing}
               >
@@ -99,7 +95,8 @@ const ApplicationRow = memo(
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-9 w-9 rounded-xl hover:text-rose-600"
+                aria-label="Reject application"
+                className="h-9 w-9 text-slate-500 hover:bg-red-50 hover:text-red-700"
                 onClick={() => onReject(app._id)}
                 disabled={isProcessing}
               >
@@ -110,11 +107,11 @@ const ApplicationRow = memo(
         </div>
       </TableCell>
     </TableRow>
-  )
+  ),
 );
 
 export default function AdminPolicyApplications() {
-  const [selectedApp, setSelectedApp] = useState(null); // Track the app for the modal
+  const [selectedApp, setSelectedApp] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -127,7 +124,6 @@ export default function AdminPolicyApplications() {
       search: deferredSearch,
       isAdmin: true,
     });
-  console.log("policy application:", adminApplications);
 
   useEffect(() => setPage(1), [deferredSearch]);
 
@@ -137,14 +133,11 @@ export default function AdminPolicyApplications() {
   };
 
   const handleApprove = async (id) => {
-    // We don't need a toastId here if the hook handles it
     try {
       await actions.approve(id);
       // Only close the modal on success
       setModalOpen(false);
     } catch (err) {
-      // React Query usually handles the global error toast,
-      // but you can keep a console log for debugging
       console.error("Approval error:", err);
     }
   };
@@ -169,85 +162,64 @@ export default function AdminPolicyApplications() {
     }
   };
 
+  const headClass =
+    "h-11 text-xs font-semibold uppercase tracking-wider text-slate-500";
+
   return (
-    <div className="p-8 bg-zinc-50/30 min-h-screen max-w-screen-2xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+    <div className="min-h-screen w-full space-y-6 px-4 py-8 md:px-8">
+      {/* Header */}
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight uppercase">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Registry Queue
           </h1>
-          <div className="flex items-center gap-2 mt-1">
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
             <span
               className={`h-2 w-2 rounded-full ${
-                isProcessing
-                  ? "bg-amber-500 animate-spin"
-                  : "bg-blue-600 animate-pulse"
+                isProcessing ? "bg-amber-500" : "bg-emerald-500"
               }`}
             />
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">
-              Active Nodes: <span className="text-zinc-900">{meta.total}</span>
-            </p>
-          </div>
+            Active Nodes:{" "}
+            <span className="font-medium text-slate-900">{meta.total}</span>
+          </p>
         </div>
 
-        <div className="relative w-full md:w-[400px]">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <div className="relative w-full md:w-96">
+          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search Registry..."
-            className="pl-12 h-12 bg-white border-zinc-200 rounded-2xl shadow-sm text-sm focus-visible:ring-blue-600"
+            aria-label="Search registry"
+            className="h-10 border-slate-300 bg-white pl-9 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="border border-zinc-200 rounded-[2.5rem] overflow-hidden shadow-sm bg-white relative">
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-0 left-0 w-full h-[3px] bg-zinc-100 overflow-hidden z-20"
-            >
-              <motion.div
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ repeat: Infinity, duration: 1.2 }}
-                className="h-full w-1/4 bg-blue-600"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Table */}
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {isLoading && (
+          <div className="absolute left-0 top-0 z-20 h-0.5 w-full animate-pulse bg-blue-600" />
+        )}
 
         <Table>
-          <TableHeader className="bg-zinc-50/50">
-            <TableRow className="border-b border-zinc-100">
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Applicant
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Policy
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Timestamp
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Status
-              </TableHead>
-              <TableHead className="px-8 py-6 text-right text-[10px] font-black uppercase text-zinc-400 tracking-widest">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-slate-200 hover:bg-slate-50">
+              <TableHead className={`${headClass} pl-6`}>Applicant</TableHead>
+              <TableHead className={headClass}>Policy</TableHead>
+              <TableHead className={headClass}>Timestamp</TableHead>
+              <TableHead className={headClass}>Status</TableHead>
+              <TableHead className={`${headClass} pr-6 text-right`}>
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-zinc-50">
+          <TableBody>
             {adminApplications.length === 0 && !isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="py-32 text-center text-zinc-300 uppercase text-[10px] font-bold"
-                >
-                  <FiInbox className="mx-auto text-4xl mb-4" />
-                  Empty Registry
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={5} className="h-56 text-center">
+                  <FiInbox className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+                  <p className="text-sm text-slate-500">Empty Registry</p>
                 </TableCell>
               </TableRow>
             ) : (
@@ -257,7 +229,7 @@ export default function AdminPolicyApplications() {
                   app={app}
                   onApprove={handleApprove}
                   onReject={handleReject}
-                  onView={handleView} // 👈 Pass the new function here
+                  onView={handleView}
                   isProcessing={isProcessing}
                 />
               ))
@@ -265,22 +237,21 @@ export default function AdminPolicyApplications() {
           </TableBody>
         </Table>
 
-        <div className="bg-white border-t border-zinc-100 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-              Scope
+        {/* Footer */}
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3 sm:flex-row">
+          <p className="text-sm text-slate-500">
+            Scope:{" "}
+            <span className="font-medium tabular-nums text-slate-900">
+              {adminApplications.length} / {meta.total}
             </span>
-            <div className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-md shadow-blue-100">
-              {adminApplications.length}{" "}
-              <span className="text-blue-200 mx-1">/</span> {meta.total}
-            </div>
-          </div>
+          </p>
 
-          <div className="flex items-center gap-1.5 bg-zinc-100/50 p-1 rounded-2xl border border-zinc-100">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl disabled:opacity-30"
+              aria-label="Previous page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={page === 1 || isLoading}
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
             >
@@ -291,33 +262,32 @@ export default function AdminPolicyApplications() {
                 <Button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  variant="ghost"
-                  className={`h-9 w-9 rounded-xl text-[11px] font-black ${
+                  variant="outline"
+                  aria-current={page === pageNum ? "page" : undefined}
+                  className={`h-9 w-9 p-0 text-sm tabular-nums ${
                     page === pageNum
-                      ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                      : "text-zinc-400 hover:text-blue-600"
+                      ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {pageNum}
                 </Button>
-              )
+              ),
             )}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl disabled:opacity-30"
+              aria-label="Next page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={page === meta.totalPages || isLoading}
               onClick={() => setPage((p) => p + 1)}
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
           </div>
-
-          <div className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">
-            Index {page} <span className="mx-2">|</span> {meta.totalPages}
-          </div>
         </div>
       </div>
+
       <ApplicationDetailModal
         app={selectedApp}
         open={modalOpen}
