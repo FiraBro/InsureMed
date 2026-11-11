@@ -1,30 +1,30 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { FiArrowLeft, FiSend } from "react-icons/fi";
 import { useTickets } from "@/hooks/useTicket";
 import { Button } from "@/components/ui/button";
-import { FiArrowLeft, FiSend } from "react-icons/fi";
 import { Loader2, Smile } from "lucide-react";
-import EmojiPicker from "emoji-picker-react"; // Remember to install this
+import EmojiPicker from "emoji-picker-react";
 
 const AdminLiveChat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const scrollRef = useRef(null);
   const [msgText, setMsgText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
-  const scrollRef = useRef();
   const emojiPickerRef = useRef(null);
 
   const { ticketDetails, isLoadingDetails, replyToTicket, isReplying } =
     useTickets(id);
 
-  // Auto-scroll logic
+  // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [ticketDetails?.messages]);
 
-  // Handle clicking outside emoji picker
+  // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -53,7 +53,7 @@ const AdminLiveChat = () => {
   };
 
   const handleKeyDown = (e) => {
-    // Desktop: Enter to send, Shift+Enter for new line
+    // Desktop: Enter sends, Shift+Enter creates new line
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
       e.preventDefault();
       handleSend();
@@ -65,7 +65,6 @@ const AdminLiveChat = () => {
   };
 
   // Fills the area beside the sidebar and below the topbar.
-  // 7rem = topbar + page padding in your layout (same value as the original).
   const shell =
     "flex h-[calc(100dvh-7rem)] min-h-[28rem] w-full flex-col overflow-hidden bg-white";
 
@@ -79,7 +78,7 @@ const AdminLiveChat = () => {
   return (
     <div className={shell}>
       {/* Header: back button only */}
-      <header className="z-30 flex shrink-0 items-center border-b border-slate-200 bg-white px-2 py-1">
+      <header className="z-30 flex shrink-0 items-center border-b border-slate-200 bg-slate-50 px-2 py-1">
         <Button
           variant="ghost"
           size="icon"
@@ -126,7 +125,9 @@ const AdminLiveChat = () => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] ${isMe ? "items-end" : "items-start"} flex flex-col`}
+                  className={`flex max-w-[80%] flex-col ${
+                    isMe ? "items-end" : "items-start"
+                  }`}
                 >
                   <div
                     className={`px-4 py-2.5 text-sm leading-relaxed ${
@@ -185,7 +186,7 @@ const AdminLiveChat = () => {
                 onKeyDown={handleKeyDown}
                 placeholder="Message"
                 aria-label="Message"
-                className="max-h-48 flex-1 resize-none overflow-y-auto border-none bg-transparent px-1 py-3 text-base leading-tight text-slate-800 outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0 focus-visible:ring-0 sm:text-sm"
+                className="max-h-48 flex-1 resize-none overflow-y-auto border-none bg-transparent px-1 py-3 text-base leading-tight text-slate-800 shadow-none outline-none ring-0 placeholder:text-slate-400 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-sm"
                 onInput={(e) => {
                   e.target.style.height = "auto";
                   e.target.style.height = e.target.scrollHeight + "px";
