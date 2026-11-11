@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useDeferredValue,
-  useEffect,
-  memo,
-} from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useDeferredValue, useEffect, memo } from "react";
 import { usePolicies } from "@/hooks/usePolicy";
 import {
   FiRefreshCw,
@@ -13,11 +6,8 @@ import {
   FiInbox,
   FiChevronLeft,
   FiChevronRight,
-  FiCheckSquare,
-  FiX,
   FiLoader,
   FiUser,
-  FiShield,
 } from "react-icons/fi";
 
 // UI Components
@@ -43,80 +33,74 @@ const getStatusStyles = (status) => {
   const s = status?.toLowerCase();
   switch (s) {
     case "active":
-      return "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-50";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "pending":
-      return "bg-zinc-100 text-zinc-500 border-zinc-200";
+      return "border-amber-200 bg-amber-50 text-amber-700";
     case "expired":
-      return "bg-rose-50 text-rose-600 border-rose-100";
+      return "border-red-200 bg-red-50 text-red-700";
     default:
-      return "bg-gray-50 text-gray-400";
+      return "border-slate-200 bg-slate-50 text-slate-500";
   }
 };
 
 /* ---------------- MEMOIZED ROW ---------------- */
-const PolicyRow = memo(({ policy, isSelected, onToggle, isProcessing }) => (
+const PolicyRow = memo(({ policy, isSelected, onToggle }) => (
   <TableRow
-    className={`hover:bg-blue-50/30 transition-all group border-none ${
-      isSelected ? "bg-blue-50/20" : ""
+    className={`h-16 border-slate-100 transition-colors hover:bg-slate-50 ${
+      isSelected ? "bg-blue-50/60 hover:bg-blue-50/60" : ""
     }`}
   >
-    <TableCell className="pl-8 py-5 w-10">
+    <TableCell className="w-12 pl-6">
       <Checkbox
         checked={isSelected}
         onCheckedChange={() => onToggle(policy._id)}
-        className="w-4 h-4 rounded border-zinc-300 data-[state=checked]:bg-blue-600"
+        aria-label="Select policy"
+        className="h-4 w-4 rounded border-slate-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
       />
     </TableCell>
 
-    <TableCell className="px-6 py-5">
+    <TableCell>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center font-bold text-xs shadow-lg font-manrope">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold uppercase text-blue-700">
           {policy.userId?.fullName?.charAt(0) || <FiUser />}
         </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-zinc-900 font-manrope text-xs leading-none mb-1.5 uppercase tracking-wide">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-900">
             {policy.userId?.fullName || "N/A"}
-          </span>
-          <span className="text-[10px] text-zinc-400 font-medium font-inter">
+          </p>
+          <p className="truncate text-xs text-slate-500">
             {policy.userId?.email}
-          </span>
+          </p>
         </div>
       </div>
     </TableCell>
 
-    <TableCell className="px-6 py-5">
-      <div className="flex flex-col">
-        <span className="font-black text-zinc-700 font-manrope text-[10px] mb-1 uppercase tracking-tighter">
-          {policy.planId?.name || "Standard Plan"}
-        </span>
-        <span className="text-[9px] text-blue-600 font-bold uppercase tracking-widest">
-          #{policy.policyNumber}
-        </span>
-      </div>
+    <TableCell>
+      <p className="text-sm font-medium text-slate-900">
+        {policy.planId?.name || "Standard Plan"}
+      </p>
+      <p className="font-mono text-xs text-slate-500">#{policy.policyNumber}</p>
     </TableCell>
 
-    <TableCell className="px-6 py-5">
-      <div className="flex flex-col">
-        <span className="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1">
-          Premium
-        </span>
-        <span className="font-black text-zinc-900 font-manrope text-xs">
-          ${policy.premium}
-        </span>
-      </div>
+    <TableCell>
+      <p className="text-xs text-slate-500">Premium</p>
+      <p className="text-sm font-semibold tabular-nums text-slate-900">
+        ${policy.premium}
+      </p>
     </TableCell>
 
-    <TableCell className="px-6 py-5">
+    <TableCell>
       <Badge
-        className={`px-3 py-1 font-black text-[9px] uppercase tracking-wider border-none ${getStatusStyles(
-          policy.status
+        variant="outline"
+        className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize shadow-none ${getStatusStyles(
+          policy.status,
         )}`}
       >
         {policy.status}
       </Badge>
     </TableCell>
 
-    <TableCell className="pr-8 py-5 text-right">
+    <TableCell className="pr-6 text-right">
       <AdminPolicyActions policy={policy} />
     </TableCell>
   </TableRow>
@@ -135,7 +119,7 @@ export default function PolicyList() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const { data, isLoading, isPlaceholderData, refetch } = useAdminPolicies({
+  const { data, isLoading, refetch } = useAdminPolicies({
     page: currentPage,
     limit: itemsPerPage,
     category: activeTab === "All" ? undefined : activeTab,
@@ -154,7 +138,7 @@ export default function PolicyList() {
 
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -186,89 +170,80 @@ export default function PolicyList() {
     refetch();
   };
 
+  const headClass =
+    "h-11 text-xs font-semibold uppercase tracking-wider text-slate-500";
+
   return (
-    <div className="p-8 bg-zinc-50/30 min-h-screen max-w-screen-2xl mx-auto font-inter relative pb-32">
-      {/* Floating Bulk Action Bar */}
-      <AnimatePresence>
-        {selectedIds.length > 0 && (
-          <motion.div
-            initial={{ y: 100, x: "-50%", opacity: 0 }}
-            animate={{ y: 0, x: "-50%", opacity: 1 }}
-            exit={{ y: 100, x: "-50%", opacity: 0 }}
-            className="fixed bottom-10 left-1/2 z-50 bg-zinc-900 text-white px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-8 border border-zinc-800 min-w-[500px]"
-          >
-            {isProcessing ? (
-              <div className="flex flex-col w-full gap-3">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  <span className="flex items-center gap-2">
-                    <FiLoader className="animate-spin" /> Node Update in
-                    Progress
-                  </span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-blue-500"
-                    animate={{ width: `${progress}%` }}
-                  />
-                </div>
+    <div className="relative min-h-screen w-full space-y-6 px-4 py-8 pb-32 md:px-8">
+      {/* Bulk action bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-xl">
+          {isProcessing ? (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-slate-600">
+                <span className="flex items-center gap-2">
+                  <FiLoader className="animate-spin" /> Node Update in Progress
+                </span>
+                <span className="tabular-nums">{progress}%</span>
               </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-4 pr-8 border-r border-zinc-800">
-                  <div className="bg-blue-600 w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black">
-                    {selectedIds.length}
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                    Selected Nodes
-                  </span>
-                </div>
-                <div className="flex flex-1 items-center gap-4">
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase px-6"
-                    onClick={() => handleBulkUpdate("Active")}
-                  >
-                    Approve Selection
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-zinc-500 hover:text-white text-[10px] font-black uppercase"
-                    onClick={() => setSelectedIds([])}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 min-w-8 items-center justify-center rounded-md bg-blue-600 px-2 text-sm font-semibold tabular-nums text-white">
+                  {selectedIds.length}
+                </span>
+                <span className="text-sm text-slate-600">Selected Nodes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  onClick={() => setSelectedIds([])}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-9 bg-blue-600 px-4 text-white hover:bg-blue-700"
+                  onClick={() => handleBulkUpdate("Active")}
+                >
+                  Approve Selection
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight uppercase font-manrope">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Policy Registry
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">
-              Network:{" "}
-              <span className="text-zinc-900">
-                {totalCount.toLocaleString()}
-              </span>{" "}
-              Active Nodes
-            </p>
-          </div>
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Network:{" "}
+            <span className="font-medium text-slate-900">
+              {totalCount.toLocaleString()}
+            </span>{" "}
+            Active Nodes
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={toggleSelectPage}
-            className="rounded-2xl border-zinc-200 text-[10px] font-black uppercase px-6 h-12 shadow-sm bg-white"
+            className="h-10 border-slate-300 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50"
           >
             {selectedIds.length === policies.length && policies.length > 0
               ? "Clear Selection"
@@ -277,36 +252,36 @@ export default function PolicyList() {
           <Button
             variant="outline"
             onClick={() => refetch()}
-            className="rounded-2xl border-zinc-200 h-12 w-12 bg-white shadow-sm"
+            aria-label="Refresh policies"
+            className="h-10 w-10 border-slate-300 bg-white p-0 text-slate-600 hover:bg-slate-50"
           >
             <FiRefreshCw
-              className={`w-4 h-4 text-zinc-500 ${
-                isLoading ? "animate-spin" : ""
-              }`}
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
             />
           </Button>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-white p-2 rounded-[2rem] border border-zinc-200 shadow-sm flex flex-col lg:flex-row gap-4 mb-8">
+      {/* Filters */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
-          <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search across secure index..."
-            className="pl-14 h-14 bg-zinc-50/50 border-none rounded-[1.5rem] text-sm font-medium"
+            aria-label="Search policies"
+            className="h-10 border-slate-300 bg-white pl-9 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="p-1">
-          <TabsList className="bg-zinc-100/50 rounded-[1.2rem] h-12 p-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="h-10 rounded-lg bg-slate-100 p-1">
             {categories.map((cat) => (
               <TabsTrigger
                 key={cat}
                 value={cat}
-                className="rounded-xl px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm"
+                className="rounded-md px-4 text-sm text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
               >
                 {cat}
               </TabsTrigger>
@@ -315,56 +290,32 @@ export default function PolicyList() {
         </Tabs>
       </div>
 
-      {/* Table Content */}
-      <div className="border border-zinc-200 rounded-[2.5rem] overflow-hidden shadow-sm bg-white relative">
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-0 left-0 w-full h-[3px] bg-zinc-100 overflow-hidden z-20"
-            >
-              <motion.div
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ repeat: Infinity, duration: 1.2 }}
-                className="h-full w-1/4 bg-blue-600"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Table */}
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {isLoading && (
+          <div className="absolute left-0 top-0 z-20 h-0.5 w-full animate-pulse bg-blue-600" />
+        )}
 
         <Table>
-          <TableHeader className="bg-zinc-50/50">
-            <TableRow className="border-b border-zinc-100 hover:bg-transparent">
-              <TableHead className="pl-8 py-6 w-10"></TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Policy Holder
-              </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Ref ID
-              </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Coverage
-              </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Status
-              </TableHead>
-              <TableHead className="pr-8 py-6 text-right text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-slate-200 hover:bg-slate-50">
+              <TableHead className="w-12 pl-6" />
+              <TableHead className={headClass}>Policy Holder</TableHead>
+              <TableHead className={headClass}>Ref ID</TableHead>
+              <TableHead className={headClass}>Coverage</TableHead>
+              <TableHead className={headClass}>Status</TableHead>
+              <TableHead className={`${headClass} pr-6 text-right`}>
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody className="divide-y divide-zinc-50">
+          <TableBody>
             {policies.length === 0 && !isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-32 text-center text-zinc-300 font-black uppercase text-[10px]"
-                >
-                  <FiInbox className="mx-auto text-4xl mb-4" />
-                  No Policies Found
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="h-56 text-center">
+                  <FiInbox className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+                  <p className="text-sm text-slate-500">No Policies Found</p>
                 </TableCell>
               </TableRow>
             ) : (
@@ -380,23 +331,21 @@ export default function PolicyList() {
           </TableBody>
         </Table>
 
-        {/* --- BLUE PAGINATION FOOTER --- */}
-        <div className="bg-white border-t border-zinc-100 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-              Scope
+        {/* Footer */}
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3 sm:flex-row">
+          <p className="text-sm text-slate-500">
+            Scope:{" "}
+            <span className="font-medium tabular-nums text-slate-900">
+              {policies.length} / {totalCount.toLocaleString()}
             </span>
-            <div className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-md shadow-blue-100">
-              {policies.length} <span className="text-blue-200 mx-1">/</span>{" "}
-              {totalCount.toLocaleString()}
-            </div>
-          </div>
+          </p>
 
-          <div className="flex items-center gap-1.5 bg-zinc-100/50 p-1 rounded-2xl border border-zinc-100">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Previous page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={currentPage === 1 || isLoading}
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             >
@@ -407,31 +356,28 @@ export default function PolicyList() {
                 <Button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`h-9 w-9 rounded-xl text-[11px] font-black ${
+                  variant="outline"
+                  aria-current={currentPage === pageNum ? "page" : undefined}
+                  className={`h-9 w-9 p-0 text-sm tabular-nums ${
                     currentPage === pageNum
-                      ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                      : "text-zinc-400"
+                      ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
-                  variant="ghost"
                 >
                   {pageNum}
                 </Button>
-              )
+              ),
             )}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Next page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={currentPage === totalPages || isLoading}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
-          </div>
-
-          <div className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">
-            Index {currentPage} <span className="mx-2 text-zinc-200">|</span>{" "}
-            {totalPages}
           </div>
         </div>
       </div>
