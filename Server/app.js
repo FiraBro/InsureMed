@@ -20,6 +20,7 @@ import applicationRoutes from "./routes/applicationRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import chatRoutes from "./routes/aiRoutes.js";
+import ragChatRoutes from "./routes/chat.routes.js";
 
 import AppError from "./utils/AppError.js";
 import globalErrorHandler from "./middlewares/errorHandler.js";
@@ -90,6 +91,8 @@ app.use(`/api/${versions}/admin`, adminRoutes);
 app.use(`/api/${versions}/dashboard`, dashboardRoutes);
 app.use(`/api/${versions}/support/tickets`, ticketRoutes);
 app.use(`/api/${versions}/applications`, applicationRoutes);
+app.use("/api/chat", ragChatRoutes);
+app.use(`/api/${versions}/chat`, ragChatRoutes);
 app.use(`/api/${versions}/chat`, chatRoutes);
 
 // ==========================================

@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
 import { redisClient } from "../config/redis.js";
 
@@ -15,8 +15,8 @@ export const authLimiter = rateLimit({
   store: createStore("auth"),
   // REAL WORLD LOGIC: Key by IP + Email
   keyGenerator: (req) => {
-    const userEmail = req.body.email || "anonymous";
-    return `${req.ip}_${userEmail}`;
+    const userEmail = req.body?.email || "anonymous";
+    return `${ipKeyGenerator(req.ip)}_${userEmail}`;
   },
   handler: (req, res) => {
     res.status(429).json({
@@ -41,9 +41,5 @@ export const chatRateLimiter = rateLimit({
   message: "Too many chat requests, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
-  // ADD THIS LINE TO FIX THE ERROR:
-  validate: { xForwardedForHeader: false },
-  // If you are using an older version, you might need to ensure
-  // your keyGenerator is simple:
-  keyGenerator: (req) => req.ip,
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
 });

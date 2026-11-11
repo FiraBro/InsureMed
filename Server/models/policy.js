@@ -57,7 +57,6 @@ const policySchema = new mongoose.Schema(
 );
 
 // ---- Indexes for performance ----
-policySchema.index({ policyNumber: 1 }, { unique: true });
 policySchema.index({ userId: 1 });
 policySchema.index({ planId: 1 });
 policySchema.index({ status: 1 });

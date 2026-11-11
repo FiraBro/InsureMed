@@ -177,7 +177,6 @@ const insurancePlanSchema = new mongoose.Schema(
 );
 
 // Enhanced Indexes
-insurancePlanSchema.index({ slug: 1 });
 insurancePlanSchema.index({ isDeleted: 1 });
 insurancePlanSchema.index({ status: 1 });
 insurancePlanSchema.index({ premium: 1 });

@@ -23,12 +23,18 @@ const getClient = () => {
 export const getEmbedding = async (text) => {
   try {
     const client = getClient();
-    // Using 'text-embedding-004' (768 dimensions)
-    const model = client.getGenerativeModel({ model: "text-embedding-004" });
-    const result = await model.embedContent(text);
+    const modelName = (process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001").replace(/^models\//, "");
+    const model = client.getGenerativeModel({ model: modelName });
+    const result = await model.embedContent({
+      content: { parts: [{ text }] },
+      outputDimensionality: 768,
+    });
+    if (result.embedding.values.length !== 768) {
+      throw new Error("Gemini returned an embedding that does not match the configured 768-dimension FAQ index.");
+    }
     return result.embedding.values;
   } catch (error) {
-    console.error("Embedding Error:", error.message);
+    console.error("CHAT_ERROR_DETAIL:", error);
     throw error;
   }
 };
@@ -40,8 +46,8 @@ export const getEmbedding = async (text) => {
 export const getAIAnswer = async (query, context) => {
   try {
     const client = getClient();
-    // Using 'gemini-2.0-flash' which replaces the older 1.5 versions
-    const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const modelName = (process.env.GEMINI_GENERATION_MODEL || "gemini-2.5-flash").replace(/^models\//, "");
+    const model = client.getGenerativeModel({ model: modelName });
 
     const prompt = `
   You are a NeuralSure Insurance Support bot. Use the PROVIDED FAQ LIST to help the user.
