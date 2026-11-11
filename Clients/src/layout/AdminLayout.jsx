@@ -19,7 +19,7 @@ export default function AdminLayout() {
         <motion.main
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex-1 p-6 overflow-y-auto"
+          className="flex-1 p-6 overflow-y-auto bg-gray-100"
         >
           <PageTransition>
             <Outlet />
