@@ -79,7 +79,7 @@ const AdminLiveChat = () => {
   return (
     <div className={shell}>
       {/* Header: back button only */}
-      <header className="z-30 flex shrink-0 items-center border-b border-slate-200 bg-slate-50 px-2 py-1">
+      <header className="z-30 flex shrink-0 items-center border-b border-slate-200 bg-white px-2 py-1">
         <Button
           variant="ghost"
           size="icon"
