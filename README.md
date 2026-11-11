@@ -1,11 +1,11 @@
-# OHIMS — Online Health Insurance Management System
+# InsureMed — Online Health Insurance Management System
 
-OHIMS is a web application for managing health insurance plans, applications, policies, claims, users, and support requests. It includes an admin interface and AI-assisted chat features.
+InsureMed is a web application for managing health insurance plans, applications, policies, claims, users, and support requests. It includes an admin interface and AI-assisted chat features.
 
 ## Project structure
 
 ```text
-OHIMS/
+InsureMed/
 ├── Clients/        React 19 + Vite frontend
 ├── Server/         Express 5 API and MongoDB models
 └── docker-compose.yml
@@ -29,7 +29,7 @@ These steps start MongoDB, Redis, the API, and the frontend together.
 
    ```bash
    git clone <repository-url>
-   cd OHIMS
+   cd InsureMed
    ```
 
    Replace `<repository-url>` with the URL of your fork or the repository you have access to.
@@ -74,7 +74,6 @@ These steps start MongoDB, Redis, the API, and the frontend together.
    The first build can take a few minutes. Leave this terminal running to see service logs. To run in the background, add `-d`.
 
 4. **Open the app and API documentation.**
-
    - Frontend: [http://localhost:3000](http://localhost:3000)
    - API status: [http://localhost:3001](http://localhost:3001)
    - Swagger API docs: [http://localhost:3001/api-docs](http://localhost:3001/api-docs)
@@ -136,15 +135,15 @@ Use this option if you already have MongoDB and Redis running locally. Open a se
 
 Run these from the relevant project directory:
 
-| Directory | Command | Purpose |
-| --- | --- | --- |
-| `Server/` | `npm run dev` | Start the API with automatic restart |
-| `Server/` | `npm start` | Start the API without automatic restart |
-| `Server/` | `npm run seed` | Run the FAQ/Gemini seed script (requires a Gemini API key) |
-| `Server/` | `npm run ingest:document -- <path>` | Ingest a document for AI search |
-| `Clients/` | `npm start` | Start the Vite development server |
-| `Clients/` | `npm run build` | Build frontend files for production |
-| `Clients/` | `npm run lint` | Check frontend code with ESLint |
+| Directory  | Command                             | Purpose                                                    |
+| ---------- | ----------------------------------- | ---------------------------------------------------------- |
+| `Server/`  | `npm run dev`                       | Start the API with automatic restart                       |
+| `Server/`  | `npm start`                         | Start the API without automatic restart                    |
+| `Server/`  | `npm run seed`                      | Run the FAQ/Gemini seed script (requires a Gemini API key) |
+| `Server/`  | `npm run ingest:document -- <path>` | Ingest a document for AI search                            |
+| `Clients/` | `npm start`                         | Start the Vite development server                          |
+| `Clients/` | `npm run build`                     | Build frontend files for production                        |
+| `Clients/` | `npm run lint`                      | Check frontend code with ESLint                            |
 
 ## Configuration notes
 
