@@ -21,7 +21,6 @@ import {
   FiUser,
   FiInbox,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
 import EditClaimModal from "@/components/modal/EditClaimModal";
 
 /* ---------------- UI Helpers ---------------- */
@@ -36,81 +35,76 @@ const getStatusStyles = (status) => {
   const s = status?.toLowerCase();
   switch (s) {
     case "approved":
-      return "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-50";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "pending":
-      return "bg-zinc-100 text-zinc-500 border-zinc-200";
+      return "border-amber-200 bg-amber-50 text-amber-700";
     case "rejected":
-      return "bg-rose-50 text-rose-600 border-rose-100";
+      return "border-red-200 bg-red-50 text-red-700";
     default:
-      return "bg-gray-50 text-gray-400";
+      return "border-slate-200 bg-slate-50 text-slate-500";
   }
 };
 
 /* ---------------- MEMOIZED ROW ---------------- */
 const ClaimRow = memo(({ claim, onSelect, onStatusUpdate, isProcessing }) => (
-  <TableRow className="hover:bg-blue-50/30 transition-all group border-none">
-    <TableCell className="px-8 py-5">
+  <TableRow className="h-16 border-slate-100 transition-colors hover:bg-slate-50">
+    <TableCell className="pl-6">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-zinc-100 font-manrope">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold uppercase text-blue-700">
           {claim.user?.fullName?.[0] || <FiUser />}
         </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-zinc-900 font-manrope text-xs leading-none mb-1.5 uppercase tracking-wide">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-900">
             {claim.user?.fullName}
-          </span>
-          <span className="text-[10px] text-zinc-400 font-medium font-inter lowercase">
-            {claim.user?.email}
-          </span>
+          </p>
+          <p className="truncate text-xs text-slate-500">{claim.user?.email}</p>
         </div>
       </div>
     </TableCell>
 
-    <TableCell className="px-8 py-5">
-      <div className="flex flex-col">
-        <span className="font-black text-zinc-700 font-manrope text-[10px] mb-1">
-          #{claim._id.slice(-8).toUpperCase()}
-        </span>
-        <span className="text-[9px] text-blue-600 font-bold uppercase tracking-widest">
-          {claim.policyNumber}
-        </span>
-      </div>
+    <TableCell>
+      <p className="font-mono text-sm font-medium text-slate-900">
+        #{claim._id.slice(-8).toUpperCase()}
+      </p>
+      <p className="text-xs text-slate-500">{claim.policyNumber}</p>
     </TableCell>
 
-    <TableCell className="px-8 py-5 font-bold text-zinc-600 text-[10px] font-inter uppercase">
-      {claim.claimType}
-    </TableCell>
+    <TableCell className="text-sm text-slate-600">{claim.claimType}</TableCell>
 
-    <TableCell className="px-8 py-5 font-black text-zinc-900 font-manrope text-xs">
+    <TableCell className="text-sm font-semibold tabular-nums text-slate-900">
       {formatCurrency(claim.amount)}
     </TableCell>
 
-    <TableCell className="px-8 py-5">
+    <TableCell>
       <Badge
-        className={`px-3 py-1 font-black text-[9px] uppercase tracking-wider border-none ${getStatusStyles(
-          claim.status
+        variant="outline"
+        className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize shadow-none ${getStatusStyles(
+          claim.status,
         )}`}
       >
         {claim.status}
       </Badge>
     </TableCell>
 
-    <TableCell className="px-8 py-5 text-right">
-      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    <TableCell className="pr-6 text-right">
+      <div className="flex justify-end gap-1">
         <Button
           size="icon"
           variant="ghost"
-          className="h-9 w-9 rounded-xl hover:bg-white hover:shadow-sm"
+          aria-label="View claim"
+          className="h-9 w-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
           onClick={() => onSelect(claim)}
           disabled={isProcessing}
         >
-          <FiEye className="h-4 w-4 text-zinc-500" />
+          <FiEye className="h-4 w-4" />
         </Button>
         {claim.status?.toLowerCase() === "pending" && (
           <>
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-xl hover:bg-emerald-50 hover:text-emerald-600"
+              aria-label="Approve claim"
+              className="h-9 w-9 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
               onClick={() => onStatusUpdate(claim._id, "approved")}
               disabled={isProcessing}
             >
@@ -119,7 +113,8 @@ const ClaimRow = memo(({ claim, onSelect, onStatusUpdate, isProcessing }) => (
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-xl hover:bg-rose-50 hover:text-rose-600"
+              aria-label="Reject claim"
+              className="h-9 w-9 text-slate-500 hover:bg-red-50 hover:text-red-700"
               onClick={() => onStatusUpdate(claim._id, "rejected")}
               disabled={isProcessing}
             >
@@ -155,98 +150,69 @@ export default function AdminClaimsManagement() {
     await updateStatus({ id, status });
   };
 
+  const headClass =
+    "h-11 text-xs font-semibold uppercase tracking-wider text-slate-500";
+
   return (
-    <div className="p-8 bg-zinc-50/30 min-h-screen max-w-screen-2xl mx-auto font-inter">
-      {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+    <div className="min-h-screen w-full space-y-6 px-4 py-8 md:px-8">
+      {/* Header */}
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight uppercase font-manrope">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Claims Registry
           </h1>
-          <div className="flex items-center gap-2 mt-1">
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
             <span
               className={`h-2 w-2 rounded-full ${
-                isProcessing
-                  ? "bg-amber-500 animate-spin"
-                  : "bg-blue-600 animate-pulse"
+                isProcessing ? "bg-amber-500" : "bg-emerald-500"
               }`}
             />
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">
-              Network:{" "}
-              <span className="text-zinc-900">
-                {meta.total.toLocaleString()}
-              </span>{" "}
-              Nodes Detected
-            </p>
-          </div>
+            Network:{" "}
+            <span className="font-medium text-slate-900">
+              {meta.total.toLocaleString()}
+            </span>{" "}
+            Nodes Detected
+          </p>
         </div>
 
-        <div className="relative w-full md:w-[400px] group">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-blue-600 transition-colors" />
+        <div className="relative w-full md:w-96">
+          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search Claims..."
-            className="pl-12 h-12 bg-white border-zinc-200 focus-visible:ring-blue-600 rounded-2xl shadow-sm text-sm"
+            aria-label="Search claims"
+            className="h-10 border-slate-300 bg-white pl-9 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      {/* --- REGISTRY TABLE --- */}
-      <div className="border border-zinc-200 rounded-[2.5rem] overflow-hidden shadow-sm bg-white relative">
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-0 left-0 w-full h-[3px] bg-zinc-100 overflow-hidden z-20"
-            >
-              <motion.div
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 1.2,
-                  ease: "easeInOut",
-                }}
-                className="h-full w-1/4 bg-blue-600"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Table */}
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {isLoading && (
+          <div className="absolute left-0 top-0 z-20 h-0.5 w-full animate-pulse bg-blue-600" />
+        )}
 
         <Table>
-          <TableHeader className="bg-zinc-50/50">
-            <TableRow className="border-b border-zinc-100 hover:bg-transparent">
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Claimant
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Reference
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Type
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Settlement
-              </TableHead>
-              <TableHead className="px-8 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
-                Status
-              </TableHead>
-              <TableHead className="px-8 py-6 text-right text-[10px] font-black uppercase text-zinc-400 tracking-widest font-manrope">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-slate-200 hover:bg-slate-50">
+              <TableHead className={`${headClass} pl-6`}>Claimant</TableHead>
+              <TableHead className={headClass}>Reference</TableHead>
+              <TableHead className={headClass}>Type</TableHead>
+              <TableHead className={headClass}>Settlement</TableHead>
+              <TableHead className={headClass}>Status</TableHead>
+              <TableHead className={`${headClass} pr-6 text-right`}>
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody className="divide-y divide-zinc-50">
+          <TableBody>
             {adminClaims.length === 0 && !isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-32 text-center">
-                  <FiInbox className="mx-auto text-4xl text-zinc-200 mb-4" />
-                  <p className="font-manrope text-[10px] font-black text-zinc-300 uppercase tracking-widest">
-                    Registry Empty
-                  </p>
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="h-56 text-center">
+                  <FiInbox className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+                  <p className="text-sm text-slate-500">Registry Empty</p>
                 </TableCell>
               </TableRow>
             ) : (
@@ -263,23 +229,21 @@ export default function AdminClaimsManagement() {
           </TableBody>
         </Table>
 
-        {/* --- BLUE PAGINATION FOOTER --- */}
-        <div className="bg-white border-t border-zinc-100 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-              Scope
+        {/* Footer */}
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3 sm:flex-row">
+          <p className="text-sm text-slate-500">
+            Scope:{" "}
+            <span className="font-medium tabular-nums text-slate-900">
+              {adminClaims.length} / {meta.total.toLocaleString()}
             </span>
-            <div className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-md shadow-blue-100">
-              {adminClaims.length} <span className="text-blue-200 mx-1">/</span>{" "}
-              {meta.total.toLocaleString()}
-            </div>
-          </div>
+          </p>
 
-          <div className="flex items-center gap-1.5 bg-zinc-100/50 p-1 rounded-2xl border border-zinc-100">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Previous page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={page === 1 || isLoading}
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
             >
@@ -291,32 +255,29 @@ export default function AdminClaimsManagement() {
                 <Button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`h-9 w-9 rounded-xl text-[11px] font-black transition-all ${
+                  variant="outline"
+                  aria-current={page === pageNum ? "page" : undefined}
+                  className={`h-9 w-9 p-0 text-sm tabular-nums ${
                     page === pageNum
-                      ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                      : "text-zinc-400 hover:text-blue-600"
+                      ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
-                  variant="ghost"
                 >
                   {pageNum}
                 </Button>
-              )
+              ),
             )}
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Next page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={page === meta.totalPages || isLoading}
               onClick={() => setPage((p) => p + 1)}
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
-          </div>
-
-          <div className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">
-            Index {page} <span className="mx-2 text-zinc-200">|</span>{" "}
-            {meta.totalPages}
           </div>
         </div>
       </div>
