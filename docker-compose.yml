@@ -5,21 +5,23 @@ services:
     restart: always
     ports:
       - "6379:6379"
+
   # ====================
-  # MongoDB
+  # MongoDB (Atlas Local with Vector Search)
   # ====================
   mongodb_health:
-    image: mongo:6
+    image: mongodb/mongodb-atlas-local:latest
     container_name: mongodb_health_insurance
     restart: always
     ports:
       - "27019:27017"
     environment:
-      MONGO_INITDB_DATABASE: health_insurance
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin123
+      - MONGODB_INITDB_ROOT_USERNAME=admin
+      - MONGODB_INITDB_ROOT_PASSWORD=admin123
+      - MONGODB_INITDB_DATABASE=health_insurance
     volumes:
       - mongodb_health_data:/data/db
+      - mongodb_mongot_data:/data/mongot
 
   # ====================
   # Backend API (Node.js)
@@ -31,7 +33,7 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - ./Server/.env # <- backend loads your .env including SMTP
+      - ./Server/.env
     depends_on:
       - mongodb_health
       - redis
@@ -48,7 +50,7 @@ services:
     container_name: health_insurance_client
     restart: always
     ports:
-      - "3000:5173" # map container port 5173 to host port 3000
+      - "3000:5173"
     environment:
       REACT_APP_API_URL: http://server:3001
     depends_on:
@@ -62,3 +64,4 @@ services:
 
 volumes:
   mongodb_health_data:
+  mongodb_mongot_data:
