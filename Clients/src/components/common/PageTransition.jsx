@@ -2,7 +2,10 @@ import { useLocation, useNavigationType } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
-export const PageTransition = ({ children }) => {
+export const PageTransition = ({
+  children,
+  className = "min-h-screen bg-white relative",
+}) => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const [isLoading, setIsLoading] = useState(true);
@@ -138,7 +141,7 @@ export const PageTransition = ({ children }) => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="min-h-screen bg-white relative"
+          className={className}
         >
           {children}
         </motion.div>
