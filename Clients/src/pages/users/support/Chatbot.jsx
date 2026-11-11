@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   HiSparkles,
   HiChevronDown,
   HiOutlinePaperAirplane,
   HiOutlineChatAlt2,
-  HiOutlineShieldCheck,
-  HiOutlineTicket,
-} from "react-icons/hi"; // Modern, thin-line icons
+} from "react-icons/hi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChatbot } from "@/hooks/useChat";
@@ -16,11 +14,14 @@ export default function PremiumInsuranceChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
+  const reduceMotion = useReducedMotion();
   const { messages, sendMessage, isLoading } = useChatbot();
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+    scrollRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [messages, isLoading, reduceMotion]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,64 +30,56 @@ export default function PremiumInsuranceChatbot() {
     setInput("");
   };
 
+  const canSend = input.trim().length > 0 && !isLoading;
+
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end sm:bottom-6 sm:right-6">
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.9, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 30, scale: 0.9, filter: "blur(10px)" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="mb-6 w-[420px] max-w-[90vw] h-[650px] flex flex-col overflow-hidden rounded-[2.5rem] border border-white/20 bg-white/80 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]"
+          <motion.section
+            role="dialog"
+            aria-label="FiraBoss Concierge chat"
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="mb-4 flex h-[620px] max-h-[calc(100vh-7rem)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
           >
-            {/* Elegant Header */}
-            <div className="relative p-6 pb-4 bg-gradient-to-b from-blue-50/50 to-transparent">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-                      <HiSparkles className="text-white text-2xl animate-pulse" />
-                    </div>
-                    <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-4 border-white rounded-full" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 tracking-tight">
-                      FiraBoss Concierge
-                    </h3>
-                    <p className="text-[11px] font-medium text-blue-600 uppercase tracking-widest">
-                      Premium Support AI
-                    </p>
-                  </div>
+            {/* Header */}
+            <header className="flex items-center justify-between bg-blue-600 px-5 py-4 text-white">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
+                  <HiSparkles className="text-lg" />
                 </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
-                >
-                  <HiChevronDown size={24} />
-                </button>
+                <div>
+                  <h3 className="text-[15px] font-semibold leading-tight">
+                    FiraBoss Concierge
+                  </h3>
+                  <p className="mt-0.5 text-xs text-blue-100">
+                    Premium Support AI
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="Minimize chat"
+                className="rounded-lg p-2 text-blue-100 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              >
+                <HiChevronDown size={22} />
+              </button>
+            </header>
 
-              {/* Trust Indicator */}
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-semibold text-slate-500 shadow-sm whitespace-nowrap">
-                  <HiOutlineShieldCheck className="text-blue-500" /> Secure
-                  Encryption
-                </span>
-                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-semibold text-slate-500 shadow-sm whitespace-nowrap">
-                  <HiOutlineChatAlt2 className="text-blue-500" /> 24/7 Response
-                </span>
-              </div>
-            </div>
-
-            {/* Chat Body */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 no-scrollbar bg-transparent">
+            {/* Chat body */}
+            <div
+              role="log"
+              aria-live="polite"
+              className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-4 py-5"
+            >
               {messages.length === 0 && (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
-                  <div className="p-4 bg-slate-100 rounded-full">
-                    <HiOutlineChatAlt2 size={32} />
-                  </div>
-                  <p className="text-sm font-medium">
+                <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+                  <HiOutlineChatAlt2 size={32} className="text-blue-300" />
+                  <p className="text-sm leading-relaxed text-slate-500">
                     Ask about your claims, coverage,
                     <br />
                     or password resets.
@@ -94,138 +87,120 @@ export default function PremiumInsuranceChatbot() {
                 </div>
               )}
 
-              {messages.map((msg, i) => (
-                <motion.div
-                  initial={{ opacity: 0, x: msg.role === "user" ? 20 : -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  key={i}
-                  className={`flex ${
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`relative max-w-[85%] px-5 py-3.5 text-sm leading-relaxed shadow-sm ${
-                      msg.role === "user"
-                        ? "bg-slate-900 text-white rounded-[1.5rem] rounded-tr-none"
-                        : "bg-white border border-slate-100 text-slate-800 rounded-[1.5rem] rounded-tl-none"
-                    }`}
+              {messages.map((msg, i) => {
+                const isUser = msg.role === "user";
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.content}
+                    <div
+                      className={`max-w-[85%] px-4 py-2.5 text-sm leading-relaxed ${
+                        isUser
+                          ? "rounded-2xl rounded-br-sm bg-blue-600 text-white"
+                          : "rounded-2xl rounded-bl-sm border border-slate-200 bg-white text-slate-800"
+                      }`}
+                    >
+                      {msg.content}
 
-                    {/* Ticket UI: Modern Bento Style */}
-                    {msg.status === "unresolved" && msg.ticketId && (
-                      <div className="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-2 opacity-10">
-                          <HiOutlineTicket size={48} />
+                      {!isUser && msg.sources?.length > 0 && (
+                        <div className="mt-2 border-t border-slate-200 pt-2 text-xs text-slate-500">
+                          <span className="font-medium">Sources:</span>
+                          <ul className="mt-1 list-inside list-disc">
+                            {msg.sources.map((source, sourceIndex) => (
+                              <li key={`${source.documentName || source.name || "source"}-${sourceIndex}`}>
+                                {source.documentName || source.name || "Policy document"}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className="flex items-center gap-2 text-blue-700 font-bold text-[10px] uppercase tracking-tighter mb-2">
-                          Request Logged
+                      )}
+
+                      {/* Ticket confirmation */}
+                      {msg.status === "unresolved" && msg.ticketId && (
+                        <div className="mt-3 rounded-lg border-l-4 border-blue-600 bg-blue-50 p-3">
+                          <p className="text-xs font-semibold text-blue-700">
+                            Request Logged
+                          </p>
+                          <p className="mt-0.5 text-lg font-semibold tabular-nums text-blue-900">
+                            #{msg.ticketId.split("-")[1]}
+                          </p>
+                          <p className="mt-1 text-xs leading-snug text-slate-600">
+                            We've escalated this to a human agent. Expect an
+                            update in the "My Tickets" section.
+                          </p>
                         </div>
-                        <div className="text-xl font-bold text-blue-900 tabular-nums mb-1">
-                          #{msg.ticketId.split("-")[1]}
-                        </div>
-                        <p className="text-[11px] text-blue-600/80 leading-tight">
-                          We've escalated this to a human agent. Expect an
-                          update in the "My Tickets" section.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
 
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex gap-1.5">
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" />
+                <div
+                  className="flex justify-start"
+                  aria-label="Assistant is typing"
+                >
+                  <div className="flex gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3.5">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.3s] motion-reduce:animate-none" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.15s] motion-reduce:animate-none" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 motion-reduce:animate-none" />
                   </div>
                 </div>
               )}
               <div ref={scrollRef} />
             </div>
 
-            {/* Input Bar: Clean Floating Design */}
-            <div className="p-6 pt-2 bg-gradient-to-t from-white via-white/80 to-transparent">
+            {/* Input */}
+            <footer className="border-t border-slate-200 bg-white p-3">
               <form
                 onSubmit={handleSubmit}
-                className="relative flex items-center bg-white/50 backdrop-blur-md border border-slate-200/60 rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-1.5 transition-all duration-300 focus-within:shadow-[0_8px_30px_rgba(59,130,246,0.12)] focus-within:border-blue-400/50 focus-within:bg-white"
+                className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white py-1.5 pl-3 pr-1.5 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15"
               >
-                {/* Minimalist Attachment/Plus Icon for that "Real App" feel */}
-                <div className="pl-2 pr-1">
-                  <div className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 cursor-pointer transition-colors">
-                    <span className="text-xl font-light">+</span>
-                  </div>
-                </div>
-
                 <Input
                   placeholder="Type your message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="border-none focus-visible:ring-0 placeholder:text-slate-400 text-sm h-11 bg-transparent selection:bg-blue-100"
+                  aria-label="Message"
+                  className="h-9 flex-1 border-none bg-transparent px-0 text-sm text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0"
                   disabled={isLoading}
                 />
-
                 <Button
                   type="submit"
                   size="icon"
-                  disabled={isLoading || !input.trim()}
-                  className={`
-        relative h-10 w-10 shrink-0 overflow-hidden rounded-xl transition-all duration-300
-        ${
-          input.trim()
-            ? "bg-blue-500 text-white shadow-lg shadow-blue-200 translate-x-0 opacity-100"
-            : "bg-blue-100 text-slate-400 translate-x-2 opacity-0 pointer-events-none"
-        }
-      `}
+                  aria-label="Send message"
+                  disabled={!canSend}
+                  className={`h-9 w-9 shrink-0 rounded-lg transition-colors ${
+                    canSend
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-slate-100 text-slate-400"
+                  }`}
                 >
-                  <AnimatePresence mode="wait">
-                    {isLoading ? (
-                      <motion.div
-                        key="loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center justify-center"
-                      >
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="send"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                      >
-                        <HiOutlinePaperAirplane
-                          className="rotate-45"
-                          size={20}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {isLoading ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                  ) : (
+                    <HiOutlinePaperAirplane className="rotate-90" size={18} />
+                  )}
                 </Button>
               </form>
-
-              {/* Micro-text Branding */}
-              <p className="text-[10px] text-center mt-3 text-slate-400 font-medium tracking-wide uppercase">
-                Powered by FiraBoss Intelligence
-              </p>
-            </div>
-          </motion.div>
+            </footer>
+          </motion.section>
         )}
       </AnimatePresence>
 
-      {/* Main Toggle Button */}
-      <motion.button
-        whileHover={{ scale: 1.05, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
+      {/* Launcher */}
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="h-10 w-10 rounded-[2rem] bg-blue-500 text-white flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:bg-blue-600 transition-colors"
+        aria-label={isOpen ? "Close chat" : "Open chat"}
+        aria-expanded={isOpen}
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
       >
-        {isOpen ? <HiChevronDown size={32} /> : <HiSparkles size={36} />}
-      </motion.button>
+        {isOpen ? <HiChevronDown size={28} /> : <HiSparkles size={26} />}
+      </button>
     </div>
   );
 }

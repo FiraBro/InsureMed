@@ -2,7 +2,10 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { sendChatQuery } from "@/services/chatService";
+import { useAuthStore } from "@/stores/authStore";
 export const useChatbot = () => {
+  const user = useAuthStore((state) => state.user);
+  const currentTier = user?.userPlanTier || user?.planTier || user?.tier;
   const [messages, setMessages] = useState([
     {
       role: "bot",
@@ -17,7 +20,7 @@ export const useChatbot = () => {
       // Add user message immediately (Optimistic Update style)
       setMessages((prev) => [
         ...prev,
-        { role: "user", content: newQuery.query },
+        { role: "user", content: newQuery.message },
       ]);
     },
     onSuccess: (data) => {
@@ -27,7 +30,8 @@ export const useChatbot = () => {
         ...prev,
         {
           role: "bot",
-          content: data.answer || data.message,
+          content: data?.answer || data?.data?.answer || data?.message || "I could not find this in your policy documents. Please contact member support.",
+          sources: data?.sources || data?.data?.sources || [],
         },
       ]);
     },
@@ -47,9 +51,9 @@ export const useChatbot = () => {
     },
   });
 
-  const sendMessage = (query) => {
-    if (!query.trim()) return;
-    mutation.mutate({ query });
+  const sendMessage = (message) => {
+    if (!message.trim()) return;
+    mutation.mutate({ message, userPlanTier: currentTier || "support" });
   };
 
   return {
