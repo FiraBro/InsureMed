@@ -6,19 +6,16 @@ import React, {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   FiPlus,
   FiEdit2,
   FiTrash2,
   FiMoreVertical,
   FiEye,
-  FiDownload,
   FiSearch,
   FiInbox,
   FiChevronLeft,
   FiChevronRight,
-  FiRefreshCw,
 } from "react-icons/fi";
 import { usePlans } from "@/hooks/usePlan";
 import {
@@ -39,7 +36,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -52,93 +48,99 @@ import { toast } from "react-toastify";
 
 const VirtualTableRow = React.memo(
   ({ plan, index, onDelete, onToggle, onEdit }) => (
-    <motion.tr
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="group hover:bg-blue-50/30 transition-all border-none"
-    >
-      <TableCell className="py-5 pl-8">
-        <div className="flex flex-col gap-1">
-          {/* RESTORED POPULAR BADGE */}
+    <TableRow className="h-[72px] border-slate-100 transition-colors hover:bg-slate-50">
+      <TableCell className="pl-6">
+        <div className="flex items-center gap-2">
+          <p className="max-w-[260px] truncate text-sm font-medium text-slate-900">
+            {plan.name}
+          </p>
           {plan.isPopular && (
-            <Badge className="bg-rose-50 text-rose-600 border-none text-[9px] font-black uppercase tracking-tighter w-fit px-2 py-0 mb-1">
+            <Badge
+              variant="outline"
+              className="rounded-full border-blue-200 bg-blue-50 px-2 py-0 text-xs font-medium text-blue-700 shadow-none"
+            >
               Popular
             </Badge>
           )}
-          <div className="font-bold text-zinc-900 group-hover:text-blue-700 transition-colors truncate max-w-[250px] font-manrope text-xs uppercase tracking-wide">
-            {plan.name}
-          </div>
-          <div className="text-[10px] text-zinc-400 truncate max-w-[250px] italic">
-            {plan.shortDescription}
-          </div>
         </div>
+        <p className="mt-0.5 max-w-[320px] truncate text-xs text-slate-500">
+          {plan.shortDescription}
+        </p>
       </TableCell>
-      <TableCell className="px-6 font-black text-zinc-900 font-manrope text-xs">
-        ${plan.premium}
-        <span className="block text-[9px] text-blue-600 font-black uppercase tracking-widest uppercase">
+
+      <TableCell>
+        <p className="text-sm font-semibold tabular-nums text-slate-900">
+          ${plan.premium}
+        </p>
+        <p className="text-xs capitalize text-slate-500">
           {plan.premiumFrequency}
-        </span>
+        </p>
       </TableCell>
-      <TableCell className="px-6">
-        <div className="text-xs font-bold text-zinc-700 font-inter">
+
+      <TableCell>
+        <p className="text-sm font-medium tabular-nums text-slate-900">
           ${plan.coverageAmount?.toLocaleString()}
-        </div>
-        <div className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">
-          Coverage
-        </div>
+        </p>
+        <p className="text-xs text-slate-500">Coverage</p>
       </TableCell>
-      <TableCell className="text-center px-6">
+
+      <TableCell className="text-center">
         <button
+          type="button"
           onClick={() => onToggle(plan)}
-          className="focus:outline-none active:scale-95 transition-transform"
+          aria-label={`Toggle status, currently ${plan.status}`}
+          className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
         >
           <Badge
-            className={`px-3 py-1 font-black text-[9px] uppercase tracking-wider border-none shadow-sm ${
+            variant="outline"
+            className={`cursor-pointer rounded-full px-2.5 py-0.5 text-xs font-medium capitalize shadow-none ${
               plan.status?.toLowerCase() === "published"
-                ? "bg-emerald-50 text-emerald-600 shadow-emerald-50"
-                : "bg-zinc-100 text-zinc-500"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-slate-100 text-slate-600"
             }`}
           >
             {plan.status}
           </Badge>
         </button>
       </TableCell>
-      <TableCell className="text-right pr-8">
+
+      <TableCell className="pr-6 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white hover:shadow-sm"
+              aria-label="Plan actions"
+              className="h-9 w-9 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             >
-              <FiMoreVertical className="text-zinc-500" />
+              <FiMoreVertical />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-52 p-2 rounded-2xl shadow-2xl bg-white border border-zinc-100"
+            className="w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"
           >
-            <DropdownMenuItem className="gap-3 py-2.5 cursor-pointer rounded-xl text-[11px] font-bold uppercase tracking-tight">
-              <FiEye className="text-blue-600" /> Quick View
+            <DropdownMenuItem className="cursor-pointer gap-2.5 rounded-md py-2 text-sm text-slate-700">
+              <FiEye className="text-slate-500" /> Quick View
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => onEdit(plan)}
-              className="gap-3 py-2.5 cursor-pointer rounded-xl text-[11px] font-bold uppercase tracking-tight"
+              className="cursor-pointer gap-2.5 rounded-md py-2 text-sm text-slate-700"
             >
-              <FiEdit2 className="text-amber-600" /> Edit Plan
+              <FiEdit2 className="text-slate-500" /> Edit Plan
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-1 bg-zinc-100" />
+            <DropdownMenuSeparator className="my-1 bg-slate-100" />
             <DropdownMenuItem
               onClick={() => onDelete(plan._id)}
-              className="gap-3 py-2.5 cursor-pointer rounded-xl text-rose-600 text-[11px] font-bold uppercase tracking-tight"
+              className="cursor-pointer gap-2.5 rounded-md py-2 text-sm text-red-600 focus:bg-red-50 focus:text-red-700"
             >
               <FiTrash2 /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
-    </motion.tr>
-  )
+    </TableRow>
+  ),
 );
 
 export default function AdminPlanListPage() {
@@ -186,7 +188,7 @@ export default function AdminPlanListPage() {
         toast.error(e.message);
       }
     },
-    [deletePlan]
+    [deletePlan],
   );
 
   const toggleStatus = useCallback(
@@ -203,177 +205,117 @@ export default function AdminPlanListPage() {
         toast(e.message);
       }
     },
-    [updatePlan]
+    [updatePlan],
   );
 
+  const headClass =
+    "h-11 text-xs font-semibold uppercase tracking-wider text-slate-500";
+  const selectTriggerClass =
+    "h-10 border-slate-300 bg-white text-sm text-slate-700 focus:ring-2 focus:ring-blue-600/20 focus:ring-offset-0";
+  const selectContentClass = "rounded-lg border-slate-200 bg-white shadow-lg";
+  const selectItemClass = "text-sm focus:bg-blue-50 focus:text-blue-700";
+
   return (
-    <div className="p-8 bg-zinc-50/30 min-h-screen max-w-screen-2xl mx-auto font-inter">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div className="min-h-screen w-full space-y-6 px-4 py-8 md:px-8">
+      {/* Header */}
+      <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight uppercase font-manrope">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Plan Inventory
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em]">
-              Inventory:{" "}
-              <span className="text-zinc-900">
-                {totalCount.toLocaleString()}
-              </span>{" "}
-              Live Products
-            </p>
-          </div>
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Inventory:{" "}
+            <span className="font-medium text-slate-900">
+              {totalCount.toLocaleString()}
+            </span>{" "}
+            Live Products
+          </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg gap-2 px-6 h-12 text-[10px] font-black uppercase tracking-widest"
-            onClick={() => navigate("/admin/create/plan")}
-          >
-            <FiPlus /> New Product
-          </Button>
-        </div>
+        <Button
+          className="h-10 gap-2 bg-blue-600 px-4 text-white hover:bg-blue-700"
+          onClick={() => navigate("/admin/create/plan")}
+        >
+          <FiPlus /> New Product
+        </Button>
       </header>
 
-      {/* CONTROL BAR - CLEANED & SPACED */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-white p-3 rounded-[2.5rem] border border-zinc-200 shadow-sm mb-8">
-        {/* Left Side: Search */}
-        <div className="relative flex-1 w-full max-w-2xl">
-          <FiSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 text-lg" />
+      {/* Filters */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="relative flex-1">
+          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search thousands of plans..."
-            className="pl-14 h-14 bg-zinc-50/50 rounded-[1.5rem] text-sm font-medium border-2 border-gray-200 focus-visible:ring-0 focus-visible:border-blue-300 placeholder:text-zinc-400 transition-all"
+            aria-label="Search plans"
+            className="h-10 border-slate-300 bg-white pl-9 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        {/* Right Side: Selects with extra gap */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="flex items-center gap-4 p-1 w-full lg:w-auto justify-end"
-        >
-          {/* Status Filter */}
-          <motion.div
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-[150px]"
-          >
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger
-                className="w-full h-12 bg-zinc-100/50 rounded-xl text-[10px] font-black uppercase tracking-widest 
-           border-2 border-gray-200 shadow-sm
-           hover:border-blue-200 hover:bg-white
-           focus:ring-0 focus:ring-offset-0 focus:border-blue-300 transition-all duration-300"
-              >
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-white/80 backdrop-blur-xl border-zinc-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <SelectItem
-                  value="ALL"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  All Status
-                </SelectItem>
-                <SelectItem
-                  value="published"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  Published
-                </SelectItem>
-                <SelectItem
-                  value="draft"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  Draft
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </motion.div>
+        <div className="flex gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className={`${selectTriggerClass} w-[150px]`}>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className={selectContentClass}>
+              <SelectItem value="ALL" className={selectItemClass}>
+                All Status
+              </SelectItem>
+              <SelectItem value="published" className={selectItemClass}>
+                Published
+              </SelectItem>
+              <SelectItem value="draft" className={selectItemClass}>
+                Draft
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Pagination Select */}
-          <motion.div
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-[120px]"
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(v) => setItemsPerPage(Number(v))}
           >
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={(v) => setItemsPerPage(Number(v))}
-            >
-              <SelectTrigger
-                className="w-full h-12 bg-zinc-100/50 rounded-xl text-[10px] font-black uppercase tracking-widest 
-           border-2 border-gray-200 shadow-sm
-           hover:border-blue-200 hover:bg-white
-           focus:ring-0 focus:ring-offset-0 focus:border-blue-300 transition-all duration-300"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white/80 backdrop-blur-xl border-zinc-100 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                <SelectItem
-                  value="25"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  25 / Pg
-                </SelectItem>
-                <SelectItem
-                  value="50"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  50 / Pg
-                </SelectItem>
-                <SelectItem
-                  value="100"
-                  className="focus:bg-blue-50 focus:text-blue-600 font-bold text-[10px] uppercase"
-                >
-                  100 / Pg
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </motion.div>
-        </motion.div>
+            <SelectTrigger className={`${selectTriggerClass} w-[120px]`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className={selectContentClass}>
+              <SelectItem value="25" className={selectItemClass}>
+                25 / Pg
+              </SelectItem>
+              <SelectItem value="50" className={selectItemClass}>
+                50 / Pg
+              </SelectItem>
+              <SelectItem value="100" className={selectItemClass}>
+                100 / Pg
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <Card className="border border-zinc-200 rounded-[2.5rem] overflow-hidden shadow-sm bg-white relative">
-        <AnimatePresence>
-          {(isFetching || isLoading) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-0 left-0 w-full h-[3px] bg-zinc-100 overflow-hidden z-20"
-            >
-              <motion.div
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ repeat: Infinity, duration: 1.2 }}
-                className="h-full w-1/4 bg-blue-600"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Table */}
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {(isFetching || isLoading) && (
+          <div className="absolute left-0 top-0 z-20 h-0.5 w-full animate-pulse bg-blue-600" />
+        )}
 
         <Table>
-          <TableHeader className="bg-zinc-50/50">
-            <TableRow className="border-b border-zinc-100">
-              <TableHead className="py-6 pl-8 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-slate-200 hover:bg-slate-50">
+              <TableHead className={`${headClass} pl-6`}>
                 Product Details
               </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Premium
-              </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-                Coverage
-              </TableHead>
-              <TableHead className="px-6 py-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest text-center">
+              <TableHead className={headClass}>Premium</TableHead>
+              <TableHead className={headClass}>Coverage</TableHead>
+              <TableHead className={`${headClass} text-center`}>
                 Status
               </TableHead>
-              <TableHead className="pr-8 py-6 text-right text-[10px] font-black uppercase text-zinc-400 tracking-widest">
+              <TableHead className={`${headClass} pr-6 text-right`}>
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-zinc-50">
+          <TableBody>
             {plans.length > 0 ? (
               plans.map((plan, idx) => (
                 <VirtualTableRow
@@ -389,35 +331,31 @@ export default function AdminPlanListPage() {
                 />
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="py-32 text-center text-zinc-300 font-black uppercase text-[10px]"
-                >
-                  <FiInbox className="mx-auto text-4xl mb-4" /> Empty Inventory
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={5} className="h-56 text-center">
+                  <FiInbox className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+                  <p className="text-sm text-slate-500">Empty Inventory</p>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
 
-        {/* RESTORED BLUE PAGINATION FOOTER */}
-        <div className="bg-white border-t border-zinc-100 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-              Scope
+        {/* Footer */}
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3 sm:flex-row">
+          <p className="text-sm text-slate-500">
+            Scope:{" "}
+            <span className="font-medium tabular-nums text-slate-900">
+              {plans.length} / {totalCount.toLocaleString()}
             </span>
-            <div className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-md shadow-blue-100">
-              {plans.length} <span className="text-blue-200 mx-1">/</span>{" "}
-              {totalCount.toLocaleString()}
-            </div>
-          </div>
+          </p>
 
-          <div className="flex items-center gap-1.5 bg-zinc-100/50 p-1 rounded-2xl border border-zinc-100">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Previous page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={currentPage === 1 || isLoading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
@@ -428,34 +366,32 @@ export default function AdminPlanListPage() {
                 <Button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`h-9 w-9 rounded-xl text-[11px] font-black ${
+                  variant="outline"
+                  aria-current={currentPage === pageNum ? "page" : undefined}
+                  className={`h-9 w-9 p-0 text-sm tabular-nums ${
                     currentPage === pageNum
-                      ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                      : "text-zinc-400 hover:text-blue-600"
+                      ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
-                  variant="ghost"
                 >
                   {pageNum}
                 </Button>
-              )
+              ),
             )}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-xl hover:bg-white disabled:opacity-30"
+              aria-label="Next page"
+              className="h-9 w-9 border-slate-300 bg-white"
               disabled={currentPage === totalPages || isLoading}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
               <FiChevronRight className="h-4 w-4" />
             </Button>
           </div>
-
-          <div className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em]">
-            Index {currentPage} <span className="mx-2 text-zinc-200">|</span>{" "}
-            {totalPages}
-          </div>
         </div>
-      </Card>
+      </div>
+
       <PlanEditModal
         plan={editingPlan}
         isOpen={isEditModalOpen}
