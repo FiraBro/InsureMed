@@ -101,7 +101,7 @@ export default function MyClaims() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -320,7 +320,7 @@ function StatusBadge({ status }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-8">
+    <div className="w-full space-y-6 px-4 py-8 md:px-8">
       <Skeleton className="h-10 w-48" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
