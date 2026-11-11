@@ -1,13 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClaims } from "@/hooks/useClaim";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  AlertCircle,
   CheckCircle,
   Clock,
   FileText,
@@ -28,7 +21,6 @@ import {
   Filter,
   RefreshCw,
   Eye,
-  Shield,
   ChevronLeft,
   ChevronRight,
   DollarSign,
@@ -42,21 +34,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 },
-};
 
 export default function MyClaims() {
   const navigate = useNavigate();
@@ -86,7 +63,7 @@ export default function MyClaims() {
       const matchesSearch =
         !searchTerm ||
         [claim.policyNumber, claim.claimType].some((field) =>
-          field?.toLowerCase().includes(searchTerm.toLowerCase())
+          field?.toLowerCase().includes(searchTerm.toLowerCase()),
         );
       const matchesStatus =
         statusFilter === "all" ||
@@ -108,93 +85,85 @@ export default function MyClaims() {
       approved: data.filter((c) => c.status?.toLowerCase() === "approved")
         .length,
       pending: data.filter((c) =>
-        ["pending", "processing"].includes(c.status?.toLowerCase())
+        ["pending", "processing"].includes(c.status?.toLowerCase()),
       ).length,
       totalAmount: data.reduce(
         (sum, c) => sum + (parseFloat(c.amount) || 0),
-        0
+        0,
       ),
     };
   }, [myClaims]);
 
   if (loading) return <LoadingSkeleton />;
 
+  const headClass =
+    "h-11 text-xs font-semibold uppercase tracking-wider text-slate-500";
+
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="min-h-screen bg-slate-50/50 p-4 md:p-8"
-    >
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <motion.div variants={itemVariants}>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-              <div className="bg-blue-600 p-2 rounded-lg text-white">
-                <Shield className="h-6 w-6" />
-              </div>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
               Claims Center
             </h1>
-            <p className="text-slate-500 mt-2">
+            <p className="mt-1 text-sm text-slate-500">
               Track and manage your insurance requests
             </p>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Button
-              onClick={() => navigate("/dashboard/claims/new")}
-              className="text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" /> New Claim
-            </Button>
-          </motion.div>
+          </div>
+          <Button
+            onClick={() => navigate("/dashboard/claims/new")}
+            className="h-10 bg-blue-600 text-white hover:bg-blue-700"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" /> New Claim
+          </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Filed"
             value={stats.total}
-            icon={<FileText className="text-blue-500" />}
+            icon={<FileText className="h-5 w-5" />}
           />
           <StatCard
             title="Approved"
             value={stats.approved}
-            icon={<CheckCircle className="text-emerald-500" />}
+            icon={<CheckCircle className="h-5 w-5" />}
           />
           <StatCard
             title="Processing"
             value={stats.pending}
-            icon={<Clock className="text-amber-500" />}
+            icon={<Clock className="h-5 w-5" />}
           />
           <StatCard
             title="Total Value"
             value={`$${stats.totalAmount.toLocaleString()}`}
-            icon={<DollarSign className="text-slate-600" />}
-            isDark
+            icon={<DollarSign className="h-5 w-5" />}
           />
         </div>
 
         {/* Filters & Table */}
-        <Card className="border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 bg-white flex flex-col md:flex-row gap-4">
+        <Card className="overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder="Search by policy..."
-                className="pl-9 border-slate-200 focus:ring-blue-500"
+                aria-label="Search claims"
+                className="h-10 border-slate-300 pl-9 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[148] border border-gray-200 rounded-xl bg-white text-gray-700 focus:ring-blue-400 ">
-                  <Filter className="h-4 w-4 mr-2 text-slate-400" />
+                <SelectTrigger className="h-10 w-[160px] border-slate-300 bg-white text-slate-700 focus:ring-2 focus:ring-blue-600/20">
+                  <Filter className="mr-2 h-4 w-4 text-slate-400" />
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="border border-gray-300 bg-white">
+                <SelectContent className="border-slate-200 bg-white">
                   <SelectItem value="all">All Claims</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
@@ -205,9 +174,10 @@ export default function MyClaims() {
                 variant="outline"
                 size="icon"
                 onClick={refresh}
-                className="border-slate-200"
+                aria-label="Refresh claims"
+                className="h-10 w-10 border-slate-300 text-slate-600 hover:bg-slate-50"
               >
-                <RefreshCw className="h-4 w-4 text-slate-600" />
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -215,70 +185,61 @@ export default function MyClaims() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50">
-                <TableRow className="border-slate-200">
-                  <TableHead className="text-slate-600 font-semibold">
+                <TableRow className="border-slate-200 hover:bg-slate-50">
+                  <TableHead className={`${headClass} pl-6`}>
                     Claim ID
                   </TableHead>
-                  <TableHead className="text-slate-600 font-semibold">
-                    Policy Number
-                  </TableHead>
-                  <TableHead className="text-slate-600 font-semibold">
-                    Type
-                  </TableHead>
-                  <TableHead className="text-slate-600 font-semibold text-right">
+                  <TableHead className={headClass}>Policy Number</TableHead>
+                  <TableHead className={headClass}>Type</TableHead>
+                  <TableHead className={`${headClass} text-right`}>
                     Amount
                   </TableHead>
-                  <TableHead className="text-slate-600 font-semibold text-center">
+                  <TableHead className={`${headClass} text-center`}>
                     Status
                   </TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className={`${headClass} pr-6 text-right`}>
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <AnimatePresence mode="wait">
-                  {paginatedClaims.map((claim) => (
-                    <TableRow
-                      key={claim._id}
-                      className="border-slate-100 hover:bg-slate-50/50 transition-colors"
-                    >
-                      <TableCell className="font-mono text-xs text-slate-400">
-                        #{claim._id?.slice(-6)}
-                      </TableCell>
-                      <TableCell className="font-medium text-slate-700">
-                        {claim.policyNumber}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="bg-slate-100 text-slate-600 hover:bg-slate-100"
-                        >
-                          {claim.claimType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-slate-900">
-                        ${claim.amount?.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <StatusBadge status={claim.status} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/claims/${claim._id}`)}
-                          className="hover:bg-blue-50 hover:text-blue-600"
-                        >
-                          <Eye className="h-4 w-4 mr-2" /> Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </AnimatePresence>
+                {paginatedClaims.map((claim) => (
+                  <TableRow
+                    key={claim._id}
+                    className="h-14 border-slate-100 transition-colors hover:bg-slate-50"
+                  >
+                    <TableCell className="pl-6 font-mono text-xs text-slate-500">
+                      #{claim._id?.slice(-6)}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-slate-900">
+                      {claim.policyNumber}
+                    </TableCell>
+                    <TableCell className="text-sm text-slate-600">
+                      {claim.claimType}
+                    </TableCell>
+                    <TableCell className="text-right text-sm font-semibold tabular-nums text-slate-900">
+                      ${claim.amount?.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <StatusBadge status={claim.status} />
+                    </TableCell>
+                    <TableCell className="pr-6 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/claims/${claim._id}`)}
+                        className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        <Eye className="mr-2 h-4 w-4" /> Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
 
-          <CardFooter className="flex items-center justify-between border-t border-slate-100 p-4 bg-slate-50/30">
+          <CardFooter className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-3">
             <p className="text-sm text-slate-500">
               Page {currentPage} of {totalPages || 1}
             </p>
@@ -286,18 +247,20 @@ export default function MyClaims() {
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="Previous page"
                 onClick={() => setCurrentPage((p) => p - 1)}
                 disabled={currentPage === 1}
-                className="border-slate-200"
+                className="h-9 border-slate-300 bg-white"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="Next page"
                 onClick={() => setCurrentPage((p) => p + 1)}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="border-slate-200"
+                className="h-9 border-slate-300 bg-white"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -305,34 +268,21 @@ export default function MyClaims() {
           </CardFooter>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// Sub-components for cleaner code
-function StatCard({ title, value, icon, isDark }) {
+function StatCard({ title, value, icon }) {
   return (
-    <Card
-      className={`border-slate-200 shadow-sm transition-all hover:shadow-md ${
-        isDark ? "bg-slate-900 text-white border-slate-800" : "bg-white"
-      }`}
-    >
-      <CardContent className="p-6 flex items-center justify-between">
+    <Card className="rounded-xl border-slate-200 bg-white shadow-sm">
+      <CardContent className="flex items-center justify-between p-5">
         <div>
-          <p
-            className={`text-sm font-medium ${
-              isDark ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {title}
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+            {value}
           </p>
-          <h3 className="text-2xl font-bold mt-1 tracking-tight">{value}</h3>
         </div>
-        <div
-          className={`p-3 rounded-xl ${
-            isDark ? "bg-slate-800" : "bg-slate-50 border border-slate-100"
-          }`}
-        >
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
           {icon}
         </div>
       </CardContent>
@@ -342,20 +292,27 @@ function StatCard({ title, value, icon, isDark }) {
 
 function StatusBadge({ status }) {
   const s = status?.toLowerCase();
+  const base = "rounded-full px-2.5 py-0.5 text-xs font-medium shadow-none";
   if (s === "approved")
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+      <Badge
+        className={`${base} border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50`}
+      >
         Approved
       </Badge>
     );
   if (s === "rejected")
     return (
-      <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">
+      <Badge
+        className={`${base} border-red-200 bg-red-50 text-red-700 hover:bg-red-50`}
+      >
         Rejected
       </Badge>
     );
   return (
-    <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
+    <Badge
+      className={`${base} border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50`}
+    >
       Pending
     </Badge>
   );
@@ -363,11 +320,11 @@ function StatusBadge({ status }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-8">
       <Skeleton className="h-10 w-48" />
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
       <Skeleton className="h-[400px] w-full rounded-xl" />
