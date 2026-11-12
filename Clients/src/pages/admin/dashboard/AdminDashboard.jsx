@@ -46,16 +46,26 @@ const MONTH_MAP = [
 export default function AdminDashboard() {
   const { data, isLoading, isError, error, isFetching } = useDashboard();
   const navigate = useNavigate();
+  const stats = data?.stats ?? {
+    totalRevenue: 0,
+    activePolicies: 0,
+    pendingApplications: 0,
+    totalUsers: 0,
+  };
+  const monthlyGrowth = Array.isArray(data?.monthlyGrowth)
+    ? data.monthlyGrowth
+    : [];
+  const recentActivity = Array.isArray(data?.recentActivity)
+    ? data.recentActivity
+    : [];
 
   const chartData = useMemo(() => {
-    return (
-      data?.monthlyGrowth?.map((item) => ({
-        name: MONTH_MAP[item._id] || `M${item._id}`,
-        policies: item.policies,
-        revenue: item.revenue || 0,
-      })) || []
-    );
-  }, [data]);
+    return monthlyGrowth.map((item) => ({
+      name: MONTH_MAP[item?._id] || `M${item?._id ?? "—"}`,
+      policies: item?.policies ?? 0,
+      revenue: item?.revenue ?? 0,
+    }));
+  }, [monthlyGrowth]);
 
   // 1. LOADING STATE
   if (isLoading) {
@@ -80,7 +90,7 @@ export default function AdminDashboard() {
           Connection Failed
         </h2>
         <p className="max-w-xs text-sm text-slate-500">
-          {error.message || "Could not connect to the insurance server."}
+          {error?.message || "Could not connect to the insurance server."}
         </p>
       </div>
     );
@@ -117,22 +127,22 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             title="Revenue"
-            value={`$${data.summary.totalRevenue}`}
+            value={formatCurrency(stats?.totalRevenue ?? 0)}
             icon={<FiDollarSign />}
           />
           <KpiCard
             title="Policies"
-            value={data.summary.activePolicies}
+            value={stats?.activePolicies ?? 0}
             icon={<FiLayers />}
           />
           <KpiCard
             title="Pending"
-            value={data.summary.pendingApplications}
+            value={stats?.pendingApplications ?? 0}
             icon={<FiAlertCircle />}
           />
           <KpiCard
             title="Users"
-            value={data.summary.totalUsers}
+            value={stats?.totalUsers ?? 0}
             icon={<FiUsers />}
           />
         </div>
@@ -221,20 +231,24 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 divide-y divide-slate-100 px-6 py-2">
-              {data.recentActivity.map((claim) => (
+              {recentActivity.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-500">
+                  No recent claims to show.
+                </p>
+              ) : recentActivity.map((claim, index) => (
                 <div
-                  key={claim._id}
+                  key={claim?._id || claim?.id || index}
                   className="flex items-center justify-between gap-3 py-3.5"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                        claim.status === "approved"
+                        claim?.status?.toLowerCase() === "approved"
                           ? "bg-emerald-50 text-emerald-600"
                           : "bg-slate-100 text-slate-500"
                       }`}
                     >
-                      {claim.status === "approved" ? (
+                      {claim?.status?.toLowerCase() === "approved" ? (
                         <FiCheckCircle size={16} />
                       ) : (
                         <FiActivity size={16} />
@@ -242,20 +256,20 @@ export default function AdminDashboard() {
                     </div>
                     <div className="min-w-0">
                       <h4 className="truncate text-sm font-medium text-slate-900">
-                        {claim.user.email.split("@")[0]}
+                        {(claim?.user?.email || claim?.user?.fullName || "Customer").split("@")[0]}
                       </h4>
                       <p className="text-xs text-slate-500">
-                        ${claim.amount} • Claim ID: ...{claim._id.slice(-4)}
+                        {formatCurrency(claim?.amount ?? 0)} • Claim ID: ...{String(claim?._id || claim?.id || "—").slice(-4)}
                       </p>
                     </div>
                   </div>
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
-                      claim.status === "approved"
+                      claim?.status?.toLowerCase() === "approved"
                         ? "bg-emerald-500"
                         : "bg-amber-400"
                     }`}
-                    aria-label={claim.status}
+                    aria-label={claim?.status || "unknown"}
                   />
                 </div>
               ))}
@@ -293,4 +307,12 @@ function KpiCard({ title, value, icon }) {
       </CardContent>
     </Card>
   );
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(amount) || 0);
 }
