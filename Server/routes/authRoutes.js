@@ -9,6 +9,7 @@ import {
   resendVerification,
   changePassword,
   getMe,
+  updateMe,
 } from "../controllers/authController.js";
 
 import {
@@ -53,6 +54,7 @@ router.put(
   resetPassword
 );
 router.get("/me", protect, getMe);
+router.patch("/me", protect, updateMe);
 // Verify email
 router.get("/verify-email/:token", verifyEmail);
 
