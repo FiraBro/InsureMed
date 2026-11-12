@@ -9,6 +9,11 @@ export const useAuthStore = create(
     authReady: false,
     isAuthenticated: false,
 
+    setUser: (user) => {
+      set({ user });
+      if (user) localStorage.setItem("user", JSON.stringify(user));
+    },
+
     /* -------------------- INITIALIZE SESSION -------------------- */
     initializeAuth: async () => {
       try {
