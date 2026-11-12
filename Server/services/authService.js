@@ -3,6 +3,9 @@ import sendEmail from "../utils/sendEmail.js";
 import User from "../models/user.js";
 import { hashToken } from "../utils/hashToken.js";
 import { signToken } from "../utils/jwt.js";
+import Policy from "../models/policy.js";
+import Notification from "../models/notification.js";
+import Application from "../models/application.js";
 
 const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || "5");
 const LOCK_TIME_MS = parseInt(process.env.LOCK_TIME_MS || `${15 * 60 * 1000}`);
@@ -202,11 +205,83 @@ export const getMeService = async (userId) => {
     throw new AppError("No user found with that ID", 404);
   }
 
+  const [policyStats, nextPolicy, notifications, applications] = await Promise.all([
+    Policy.aggregate([
+      { $match: { userId: user._id, status: "active", isDeleted: { $ne: true } } },
+      { $group: { _id: null, activePolicies: { $sum: 1 }, totalCoverage: { $sum: { $ifNull: ["$planSnapshot.coverageAmount", 0] } } } },
+    ]),
+    Policy.findOne({ userId: user._id, status: "active", isDeleted: { $ne: true }, endDate: { $gte: new Date() } }).sort({ endDate: 1 }).select("endDate").lean(),
+    Notification.find({ userId: user._id }).sort({ createdAt: -1 }).limit(5).select("title message isRead createdAt").lean(),
+    Application.find({ userId: user._id, isDeleted: { $ne: true } }).select("documents").lean(),
+  ]);
+  const renewalDays = nextPolicy
+    ? Math.max(0, Math.ceil((new Date(nextPolicy.endDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : null;
+  const documents = applications.flatMap((application) => application.documents || []).map((document) => ({
+    id: document._id,
+    name: document.name,
+    fileType: document.fileType || null,
+    size: document.size || null,
+    uploadedAt: document.uploadedAt || null,
+    url: document.url || null,
+  }));
+
+  return {
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone || "",
+      address: user.address || { street: "", city: "", state: "", zip: "", country: "" },
+      profilePicture: user.profilePicture || null,
+      role: user.role,
+      isVerified: user.isVerified,
+      membershipTier: user.membershipTier || "Standard Member",
+      status: user.status,
+      createdAt: user.createdAt,
+    },
+    stats: {
+      activePolicies: policyStats[0]?.activePolicies || 0,
+      nextRenewalDays: renewalDays,
+      totalCoverage: policyStats[0]?.totalCoverage || 0,
+    },
+    notifications: notifications.map((notification) => ({
+      id: notification._id,
+      title: notification.title,
+      description: notification.message,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+    })),
+    paymentMethods: [],
+    documents,
+    security: {
+      twoFactorEnabled: Boolean(user.twoFactorEnabled),
+      lastPasswordChange: user.passwordChangedAt || null,
+    },
+  };
+};
+
+export const updateMeService = async (userId, updates) => {
+  const allowedFields = ["fullName", "email", "phone", "address"];
+  const safeUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([key, value]) => allowedFields.includes(key) && value !== undefined)
+  );
+  const user = await User.findByIdAndUpdate(userId, safeUpdates, {
+    new: true,
+    runValidators: true,
+  });
+  if (!user) throw new AppError("No user found with that ID", 404);
   return {
     id: user._id,
     fullName: user.fullName,
     email: user.email,
+    phone: user.phone || "",
+    address: user.address || { street: "", city: "", state: "", zip: "", country: "" },
+    profilePicture: user.profilePicture || null,
     role: user.role,
     isVerified: user.isVerified,
+    membershipTier: user.membershipTier || "Standard Member",
+    status: user.status,
+    createdAt: user.createdAt,
   };
 };
