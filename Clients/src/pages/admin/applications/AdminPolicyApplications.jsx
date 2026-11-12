@@ -139,6 +139,7 @@ export default function AdminPolicyApplications() {
       setModalOpen(false);
     } catch (err) {
       console.error("Approval error:", err);
+      toast.error(err.response?.data?.message || err.message || "Application approval failed.");
     }
   };
 
@@ -293,7 +294,7 @@ export default function AdminPolicyApplications() {
         open={modalOpen}
         onOpenChange={setModalOpen}
         onApprove={handleApprove}
-        onReject={reject}
+        onReject={handleReject}
         isProcessing={isProcessing}
       />
     </div>
