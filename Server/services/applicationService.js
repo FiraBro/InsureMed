@@ -62,7 +62,7 @@ class ApplicationService {
         throw new AppError("Only pending applications can be approved", 400);
 
       // 2. Load Plan Data
-      const planData = await Plan.findById(app.planId);
+      const planData = await InsurancePlan.findById(app.planId);
       if (!planData) throw new AppError("Plan not found", 404);
 
       // 3. Check for existing active policy
@@ -102,7 +102,11 @@ class ApplicationService {
         startDate,
         endDate,
         premium: planData.premium,
-        coverageAmount: planData.coverageAmount,
+        planSnapshot: {
+          name: planData.name,
+          coverageAmount: planData.coverageAmount,
+          planType: planData.category,
+        },
         status: "active",
         policyNumber: `POL-${crypto.randomBytes(6).toString("hex")}`,
         createdBy: adminId,

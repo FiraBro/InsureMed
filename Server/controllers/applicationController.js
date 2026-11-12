@@ -48,16 +48,19 @@ export const applyForPolicy = async (req, res) => {
 export const approveApplication = catchAsync(async (req, res) => {
   const result = await applicationService.approve(req.params.id, req.user.id);
 
-  // AUTOMATION: Notify user of approval
-  await NotificationService.trigger("APPLICATION_APPROVED", result.userId, {
-    id: result._id,
-    policyType: result.planName || "New Policy",
+  // The service returns both the approved application and the created policy.
+  const { application, policy } = result;
+
+  // AUTOMATION: Notify the applicant after the approval has been persisted.
+  await NotificationService.trigger("APPLICATION_APPROVED", application.userId, {
+    id: application._id,
+    policyType: application.personal?.planName || "New Policy",
   });
 
   res.status(200).json({
     status: "success",
     message: "Application approved successfully",
-    data: result,
+    data: { application, policy },
   });
 });
 
