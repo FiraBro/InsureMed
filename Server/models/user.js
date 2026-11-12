@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
   dateOfBirth: { type: Date },
   gender: { type: String, enum: ["male", "female", "other"] },
   profilePicture: { type: String },
+  membershipTier: { type: String, default: "Standard Member" },
+  status: { type: String, default: "active" },
+  twoFactorEnabled: { type: Boolean, default: false },
+  passwordChangedAt: { type: Date },
 
   isVerified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

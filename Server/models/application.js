@@ -40,6 +40,8 @@ const applicationSchema = new mongoose.Schema(
       {
         name: String,
         url: String,
+        fileType: String,
+        size: Number,
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
