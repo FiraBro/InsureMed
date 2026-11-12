@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
@@ -14,6 +14,7 @@ import {
   FiList, // For All Plans
   FiLayers, // For Applications
   FiMessageSquare,
+  FiBookOpen,
 } from "react-icons/fi";
 import { cn } from "@/lib/utils";
 
@@ -57,12 +58,12 @@ const navItems = [
         path: "/admin/settings",
         icon: FiActivity,
       },
+      { name: "Documentation", path: "/admin/docs", icon: FiBookOpen },
     ],
   },
 ];
 
 export default function Sidebar() {
-  const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
 
@@ -99,39 +100,40 @@ export default function Sidebar() {
             </h3>
             <div className="space-y-1">
               {group.items.map((item) => {
-                const isActive = location.pathname === item.path;
                 return (
                   <NavLink
                     key={item.name}
                     to={item.path}
-                    className={({ isActive }) =>
-                      cn(
-                        "group flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200",
-                        isActive
-                          ? "bg-blue-500 text-white shadow-md shadow-zinc-200"
-                          : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50",
-                      )
-                    }
+                    className={({ isActive }) => cn(
+                      "group flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200",
+                      isActive
+                        ? "bg-blue-500 text-white shadow-md shadow-zinc-200"
+                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50",
+                    )}
                   >
-                    <div className="flex items-center gap-3">
-                      <item.icon
-                        className={cn(
-                          "text-lg",
-                          isActive ? "text-white" : "group-hover:text-blue-500",
+                    {({ isActive }) => (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <item.icon
+                            className={cn(
+                              "text-lg",
+                              isActive ? "text-white" : "group-hover:text-blue-500",
+                            )}
+                          />
+                          <span className="text-sm font-semibold tracking-tight">
+                            {item.name}
+                          </span>
+                        </div>
+                        {isActive && (
+                          <motion.div
+                            layoutId="arrow"
+                            initial={{ x: -5 }}
+                            animate={{ x: 0 }}
+                          >
+                            <FiChevronRight className="text-white" />
+                          </motion.div>
                         )}
-                      />
-                      <span className="text-sm font-semibold tracking-tight">
-                        {item.name}
-                      </span>
-                    </div>
-                    {isActive && (
-                      <motion.div
-                        layoutId="arrow"
-                        initial={{ x: -5 }}
-                        animate={{ x: 0 }}
-                      >
-                        <FiChevronRight className="text-white" />
-                      </motion.div>
+                      </>
                     )}
                   </NavLink>
                 );

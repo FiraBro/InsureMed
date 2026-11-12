@@ -31,6 +31,7 @@ const AdminPlanListPage = lazy(() => import("@/pages/admin/plan/ListAllPlan"));
 const AdminSupportDashboard = lazy(() => import("@/pages/admin/ticket/AllTicket"));
 const AdminLiveChat = lazy(() => import("@/pages/admin/support/AdminLiveChat"));
 const Settings = lazy(() => import("@/pages/admin/support/Setting"));
+const AdminDocs = lazy(() => import("@/pages/admin/docs/AdminDocs"));
 const NotFoundPage = lazy(() => import("@/components/common/NotFoundPage"));
 
 function LegacyApplyRedirect() {
@@ -90,6 +91,7 @@ export const router = createBrowserRouter([
       { path: "support/tickets", element: withSuspense(<AdminSupportDashboard />) },
       { path: "tickets/:id", element: withSuspense(<AdminLiveChat />) },
       { path: "settings", element: withSuspense(<Settings />) },
+      { path: "docs", element: withSuspense(<AdminDocs />) },
       { path: "*", element: withSuspense(<NotFoundPage />) },
     ],
   },
