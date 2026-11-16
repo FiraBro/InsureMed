@@ -14,6 +14,11 @@ const transporter = nodemailer.createTransport({
 });
 
 export default async function sendEmail({ email, subject, html, text }) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    console.log(`ℹ️ SMTP is not configured. Email skipped for: ${email}`);
+    return { messageId: "skipped-no-smtp" };
+  }
+
   try {
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM,

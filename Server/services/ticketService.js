@@ -131,7 +131,7 @@ export const updateStatus = async (ticketId, newStatus) => {
       ticket.user.name,
       ticket.ticketId,
       newStatus,
-      `${process.env.CLIENT_UR}/support/tickets/${ticket._id}` // Your Frontend URL
+      `${process.env.CLIENT_URL}/support/tickets/${ticket._id}` // Your Frontend URL
     );
 
     await sendEmail({

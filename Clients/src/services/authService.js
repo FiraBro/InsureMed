@@ -14,8 +14,16 @@ export const login = async ({ email, password }) => {
 };
 
 export const register = async (userData) => {
-  const res = await api.post("/auth/register", userData);
-  return res.data;
+  try {
+    const res = await api.post("/auth/register", userData);
+    return res.data;
+  } catch (err) {
+    console.error("Registration failed:", err.response?.data || err.message);
+    return {
+      status: "fail",
+      message: err.response?.data?.message || err.message || "Registration failed",
+    };
+  }
 };
 
 export const logout = async () => {

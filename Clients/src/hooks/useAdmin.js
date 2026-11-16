@@ -20,25 +20,35 @@ export const useEnterpriseDashboard = () => {
     try {
       if (!silent) setIsLoading(true);
 
-      const [analyticsRes, settingsRes] = await Promise.allSettled([
-        adminService.getEnterpriseData(),
-        adminService.getSettings(),
-      ]);
+      const promises = [adminService.getSettings()];
+      let currentUser = null;
+      try {
+        currentUser = JSON.parse(localStorage.getItem("user") || "null");
+      } catch (e) {
+        // ignore JSON parse error
+      }
+
+      if (currentUser?.role === "admin") {
+        promises.push(adminService.getEnterpriseData());
+      }
+
+      const results = await Promise.allSettled(promises);
+      const settingsRes = results[0];
+      const analyticsRes = results[1];
 
       // Handle Settings (Critical for Maintenance Mode)
-      if (settingsRes.status === "fulfilled") {
+      if (settingsRes?.status === "fulfilled") {
         let rawSettings = settingsRes.value?.data ?? settingsRes.value;
         if (Array.isArray(rawSettings)) rawSettings = rawSettings[0];
         setSettings(rawSettings);
       }
 
       // Handle Analytics
-      if (analyticsRes.status === "fulfilled") {
+      if (analyticsRes?.status === "fulfilled") {
         setAdminData(analyticsRes.value?.data ?? analyticsRes.value);
       }
     } catch (error) {
       console.error("Dashboard Sync Error:", error);
-      toast.error("System synchronization failed");
     } finally {
       setIsLoading(false);
     }

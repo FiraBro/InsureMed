@@ -5,6 +5,11 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # ====================
   # MongoDB (Atlas Local with Vector Search)
@@ -12,15 +17,17 @@ services:
   mongodb_health:
     image: mongodb/mongodb-atlas-local:latest
     container_name: mongodb_health_insurance
+    hostname: mongodb_health
     restart: always
     ports:
       - "27019:27017"
     environment:
-      - MONGODB_INITDB_ROOT_USERNAME=admin
-      - MONGODB_INITDB_ROOT_PASSWORD=admin123
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in the root .env file}
       - MONGODB_INITDB_DATABASE=health_insurance
     volumes:
       - mongodb_health_data:/data/db
+      - mongodb_health_config:/data/configdb
       - mongodb_mongot_data:/data/mongot
 
   # ====================
@@ -35,10 +42,13 @@ services:
     env_file:
       - ./Server/.env
     depends_on:
-      - mongodb_health
-      - redis
+      redis:
+        condition: service_healthy
+      mongodb_health:
+        condition: service_healthy
     volumes:
       - ./Server:/app
+      - /app/node_modules
     working_dir: /app
     command: npm run dev
 
@@ -52,11 +62,12 @@ services:
     ports:
       - "3000:5173"
     environment:
-      REACT_APP_API_URL: http://server:3001
+      VITE_API_URL: http://localhost:3001/api/v1
     depends_on:
       - server
     volumes:
       - ./Clients:/app
+      - /app/node_modules
     working_dir: /app
     command: npm start
     stdin_open: true
@@ -64,4 +75,5 @@ services:
 
 volumes:
   mongodb_health_data:
+  mongodb_health_config:
   mongodb_mongot_data:

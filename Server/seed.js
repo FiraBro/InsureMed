@@ -95,15 +95,20 @@ async function seedDatabase() {
     console.log("DEBUG: Key detected. Length:", apiKey.length);
 
     // Connect to DB
-    await mongoose.connect(
-      process.env.MONGO_URI ||
-        "mongodb://admin:admin123@127.0.0.1:27019/health_insurance?authSource=admin"
-    );
-    console.log("✅ Connected to MongoDB", process.env.MONGO_URI);
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+    if (!mongoUri) {
+      console.error("❌ ERROR: MONGODB_URI (or MONGO_URI) is not configured in .env");
+      process.exit(1);
+    }
+
+    await mongoose.connect(mongoUri);
+    console.log("✅ Connected to MongoDB");
 
     // Initialize AI inside the function
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const modelName = (process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001").replace(/^models\//, "");
+    const dimensions = Number(process.env.GEMINI_EMBEDDING_DIMENSIONS || 768);
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     await FAQ.deleteMany({});
 
@@ -111,7 +116,10 @@ async function seedDatabase() {
       try {
         console.log(`📡 Processing: ${faq.question}`);
 
-        const result = await model.embedContent(faq.question);
+        const result = await model.embedContent({
+          content: { parts: [{ text: faq.question }] },
+          outputDimensionality: dimensions,
+        });
 
         // VALIDATION: If the API failed, result.embedding won't exist
         if (!result || !result.embedding || !result.embedding.values) {

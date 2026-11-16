@@ -86,23 +86,30 @@ export default function AuthForm() {
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
     setIsLoading(true);
-    const payload = {
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      passwordConfirm: formData.passwordConfirm,
-      phone: formData.phone,
-      dateOfBirth: formData.dateOfBirth,
-    };
+    try {
+      const payload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        passwordConfirm: formData.passwordConfirm,
+        phone: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.address,
+        gender: formData.gender,
+      };
 
-    const result = await register(payload);
-    setIsLoading(false);
+      const result = await register(payload);
 
-    if (result?.id || result?.status === "success") {
-      toast.success("Account created! Please verify your email.");
-      setActiveMode("login");
-    } else {
-      toast.error(result?.message || "Registration failed");
+      if (result?.id || result?.status === "success" || result?.data) {
+        toast.success("Account created successfully! Please sign in.");
+        setActiveMode("login");
+      } else {
+        toast.error(result?.message || "Registration failed");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
